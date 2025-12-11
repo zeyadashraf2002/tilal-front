@@ -22,9 +22,9 @@ const TaskDetailModal = ({
           <div className="max-w-full">
             {/* Feedback Banner */}
             {task.feedback && (
-              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-b-4 border-amber-400 rounded-xl p-4 mb-6 shadow-sm">
+              <div className="bg-linear-to-r from-yellow-50 to-amber-50 border-b-4 border-amber-400 rounded-xl p-4 mb-6 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <div className="bg-amber-100 p-2 rounded-full flex-shrink-0">
+                  <div className="bg-amber-100 p-2 rounded-full shrink-0">
                     <Star className="w-5 h-5 text-amber-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -86,7 +86,7 @@ const TaskDetailModal = ({
                   {task.site && (
                     <div className="bg-green-50 rounded-xl p-4 border border-green-200">
                       <h4 className="font-bold text-sm text-green-900 mb-2 flex items-center gap-2">
-                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <MapPin className="w-4 h-4 shrink-0" />
                         <span className="truncate">Site Location</span>
                       </h4>
                       <p className="font-semibold text-sm text-green-800 truncate">
@@ -135,7 +135,7 @@ const TaskDetailModal = ({
                   <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2 flex-wrap">
                     <span className="text-green-600">After Work Photos</span>
                     {visibleAfterImages.length > 0 && (
-                      <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full flex-shrink-0">
+                      <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full shrink-0">
                         {visibleAfterImages.length} photos
                       </span>
                     )}
@@ -181,7 +181,7 @@ const TaskDetailModal = ({
 
         {/* Fixed Action Button at Bottom */}
         {!task.feedback && task.status === "completed" && (
-          <div className="flex-shrink-0 mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 -mx-6 px-6 pb-2">
+          <div className="shrink-0 mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 -mx-6 px-6 pb-2">
             <Button
               variant="success"
               size="lg"
