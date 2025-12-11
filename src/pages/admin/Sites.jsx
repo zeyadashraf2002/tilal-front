@@ -1,5 +1,5 @@
-// frontend/src/pages/admin/Sites.jsx - UPDATED STRUCTURE
-import { useState, useEffect } from "react";
+// src/pages/admin/Sites.jsx
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   Edit,
@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { sitesAPI, clientsAPI } from "../../services/api";
-import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import SiteModal from "./SiteModal";
 import Loading from "../../components/common/Loading";
@@ -54,27 +53,20 @@ const Sites = () => {
   // Refetch data after create/update/delete
   const refetchSites = async () => {
     try {
-      setLoading(true);
-      const params = {};
-      if (clientFilter !== "all") params.client = clientFilter;
-      if (searchTerm) params.search = searchTerm;
-
-      const response = await sitesAPI.getAllSites(params);
-      setSites(response.data.data || []);
+      const response = await sitesAPI.getAllSites();
+      setAllSites(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching sites:", error);
-      alert("Failed to fetch sites");
-    } finally {
-      setLoading(false);
+      console.error("Error refetching sites:", error);
     }
   };
 
-  const fetchClients = async () => {
-    try {
-      const response = await clientsAPI.getClients();
-      setClients(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching clients:", error);
+  // Client-side filtering
+  const filteredSites = useMemo(() => {
+    let filtered = allSites;
+
+    // Filter by client
+    if (clientFilter !== "all") {
+      filtered = filtered.filter((site) => site.client?._id === clientFilter);
     }
 
     // Filter by search term
@@ -101,7 +93,7 @@ const Sites = () => {
   };
 
   const handleDelete = async (e, id) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
     if (
       window.confirm(
         "Are you sure you want to delete this site? All sections and images will be deleted."
@@ -122,14 +114,6 @@ const Sites = () => {
     setIsModalOpen(true);
   };
 
-  const clientOptions = [
-    { value: "all", label: `All Clients (${allSites.length})` },
-    ...allClients.map((client) => ({
-      value: client._id,
-      label: client.name,
-    })),
-  ];
-
   const getSiteTypeColor = (type) => {
     const colors = {
       residential: "bg-blue-100 text-blue-800",
@@ -140,10 +124,6 @@ const Sites = () => {
     };
     return colors[type] || "bg-gray-100 text-gray-800";
   };
-
-  const filteredSites = sites.filter((site) =>
-    site.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   if (loading) {
     return <Loading fullScreen />;
@@ -159,7 +139,7 @@ const Sites = () => {
             Sites Management
           </h1>
           <p className="text-gray-600 mt-1">
-            Manage all work sites and their sections
+            {filteredSites.length} sites displayed • {allSites.length} total
           </p>
         </div>
         <Button onClick={handleAddNew} icon={Plus}>
@@ -181,23 +161,26 @@ const Sites = () => {
             />
           </div>
         </div>
-        <div className="w-full md:w-48">
+
+        <div className="w-full md:w-64">
           <select
             value={clientFilter}
             onChange={(e) => setClientFilter(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
           >
-            <option value="all">All Clients</option>
-            {clients.map((client) => (
-              <option key={client._id} value={client._id}>
-                {client.name}
-              </option>
-            ))}
+            <option value="all">All Clients ({allSites.length})</option>
+            {allClients.map((client) => {
+              const siteCount = allSites.filter(
+                (s) => s.client?._id === client._id
+              ).length;
+              return (
+                <option key={client._id} value={client._id}>
+                  {client.name} ({siteCount})
+                </option>
+              );
+            })}
           </select>
         </div>
-        <Button variant="secondary" onClick={fetchSites}>
-          Apply Filters
-        </Button>
       </div>
 
       {/* Sites Grid */}
@@ -216,7 +199,7 @@ const Sites = () => {
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all cursor-pointer group h-[500px] flex flex-col"
               onClick={() => handleSiteClick(site)}
             >
-              {/* Cover Image - Fixed Height */}
+              {/* Cover Image */}
               <div className="h-48 bg-gray-100 overflow-hidden relative shrink-0">
                 {site.coverImage?.url ? (
                   <img
@@ -230,7 +213,6 @@ const Sites = () => {
                   </div>
                 )}
 
-                {/* Click to Manage Sections Badge */}
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center pointer-events-none">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg px-4 py-2 flex items-center gap-2">
                     <Layers className="w-5 h-5 text-primary-600" />
@@ -250,7 +232,7 @@ const Sites = () => {
                       {site.name}
                     </h3>
                     <p className="text-sm text-gray-500 truncate">
-                      {site.client?.name || "N/A"}
+                      {site.client?.name || "No Client"}
                     </p>
                   </div>
                   <span
@@ -258,20 +240,16 @@ const Sites = () => {
                       site.siteType
                     )}`}
                   >
-                    {site.siteType}
+                    {site.siteType || "unknown"}
                   </span>
                 </div>
 
-                {/* Description - Fixed 2 lines */}
-                <div className="shrink-0 h-10">
-                  {site.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {site.description}
-                    </p>
-                  )}
-                </div>
+                {site.description && (
+                  <p className="text-sm text-gray-600 line-clamp-2 shrink-0">
+                    {site.description}
+                  </p>
+                )}
 
-                {/* Stats - Fixed */}
                 <div className="grid grid-cols-3 gap-2 pt-3 border-t shrink-0">
                   <div className="text-center">
                     <p className="text-xs text-gray-500">Area</p>
@@ -294,19 +272,15 @@ const Sites = () => {
                   </div>
                 </div>
 
-                {/* Location - Fixed height */}
-                <div className="shrink-0 h-10 pt-2">
-                  {site.location?.address && (
-                    <div className="flex items-start gap-2 text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span className="line-clamp-1">
-                        {site.location.address}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                {site.location?.address && (
+                  <div className="flex items-start gap-2 text-sm text-gray-600 shrink-0">
+                    <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span className="line-clamp-1">
+                      {site.location.address}
+                    </span>
+                  </div>
+                )}
 
-                {/* Actions - Fixed at bottom */}
                 <div className="flex gap-2 pt-3 border-t mt-auto shrink-0">
                   <button
                     onClick={(e) => handleEdit(e, site)}
