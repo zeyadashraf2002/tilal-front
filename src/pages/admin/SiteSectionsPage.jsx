@@ -93,7 +93,7 @@ const SiteSectionsPage = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200">
+            <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary-100 to-primary-200">
               <MapPin className="w-24 h-24 text-primary-400" />
             </div>
           )}

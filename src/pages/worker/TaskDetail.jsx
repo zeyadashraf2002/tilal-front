@@ -81,7 +81,7 @@ const TaskDetail = () => {
           setAfterPreviews(loadedAfter);
         }
       } else {
-        console.warn("No reference images found");
+        console.warn("⚠️ No reference images found");
       }
 
       // Load existing materials

@@ -47,7 +47,7 @@ const TaskDetailModal = ({
                       </span>
                     </div>
                     {task.feedback.comment && (
-                      <p className="text-sm text-gray-800 leading-relaxed break-words">
+                      <p className="text-sm text-gray-800 leading-relaxed wrap-break-word">
                         "{task.feedback.comment}"
                       </p>
                     )}
@@ -76,7 +76,7 @@ const TaskDetailModal = ({
                   <h4 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
                     <span className="text-green-600">Description</span>
                   </h4>
-                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap wrap-break-word">
                     {task.description}
                   </p>
                 </div>
@@ -93,7 +93,7 @@ const TaskDetailModal = ({
                         {task.site.name}
                       </p>
                       {task.site.location?.address && (
-                        <p className="text-xs text-green-700 mt-1 break-words">
+                        <p className="text-xs text-green-700 mt-1 wrap-break-word">
                           {task.site.location.address}
                         </p>
                       )}
@@ -131,7 +131,7 @@ const TaskDetailModal = ({
 
               {/* Right Column – After Work Photos */}
               <div className="min-w-0">
-                <div className="bg-gradient-to-b from-gray-50 to-white rounded-xl p-4 border border-gray-200">
+                <div className="bg-linear-to-r from-gray-50 to-white rounded-xl p-4 border border-gray-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2 flex-wrap">
                     <span className="text-green-600">After Work Photos</span>
                     {visibleAfterImages.length > 0 && (
@@ -154,7 +154,7 @@ const TaskDetailModal = ({
                             alt={`After work ${idx + 1}`}
                             className="w-full h-40 object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                          <div className="absolute inset-0 bg-linear-to-r from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                             <div className="p-3 text-white">
                               <Eye className="w-6 h-6" />
                             </div>

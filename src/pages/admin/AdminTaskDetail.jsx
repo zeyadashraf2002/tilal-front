@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/AdminTaskDetail.jsx - ✅ WITH GPS & IMAGE VISIBILITY
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,7 +12,6 @@ import {
 import { tasksAPI } from "../../services/api";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
-import Input from "../../components/common/Input";
 import Loading from "../../components/common/Loading";
 
 const AdminTaskDetail = () => {
@@ -32,7 +31,7 @@ const AdminTaskDetail = () => {
 
   useEffect(() => {
     fetchTask();
-  }, [fetchTask]);
+  }, [id]);
 
   useEffect(() => {
     if (task) {
@@ -72,7 +71,7 @@ const AdminTaskDetail = () => {
     }
   }, [task]);
 
-  const fetchTask = useCallback(async () => {
+  const fetchTask = async () => {
     try {
       setLoading(true);
       const response = await tasksAPI.getTask(id);
@@ -83,7 +82,7 @@ const AdminTaskDetail = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  };
 
   const handleSaveReview = async (status) => {
     try {

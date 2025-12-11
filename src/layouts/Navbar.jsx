@@ -60,7 +60,7 @@ const Navbar = ({ onMenuClick }) => {
   };
 
   const getNotificationIcon = (type) => {
-    return `NotificationIcon !!!  ${type}`;
+    return `📢 NotificationIcon !!!  ${type}`;
   };
 
   const getTimeAgo = (date) => {
