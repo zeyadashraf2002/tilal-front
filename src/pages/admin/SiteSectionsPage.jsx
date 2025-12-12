@@ -1,12 +1,11 @@
-// frontend/src/pages/admin/SiteSectionsPage.jsx - NEW FILE
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Layers, Edit } from "lucide-react";
-import { sitesAPI } from "../../services/api";
 import Button from "../../components/common/Button";
 import SectionManagement from "./SectionManagement";
 import SiteModal from "./SiteModal";
 import Loading from "../../components/common/Loading";
+import { sitesAPI, clientsAPI } from "../../services/api";
 
 const SiteSectionsPage = () => {
   const { id } = useParams();
@@ -16,12 +15,7 @@ const SiteSectionsPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [clients, setClients] = useState([]);
 
-  useEffect(() => {
-    fetchSite();
-    fetchClients();
-  }, [id]);
-
-  const fetchSite = async () => {
+  const fetchSite = useCallback(async () => {
     try {
       setLoading(true);
       const response = await sitesAPI.getSite(id);
@@ -33,17 +27,21 @@ const SiteSectionsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
-      const { clientsAPI } = await import("../../services/api");
       const response = await clientsAPI.getClients();
       setClients(response.data.data || []);
     } catch (error) {
       console.error("Error fetching clients:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSite();
+    fetchClients();
+  }, [fetchSite, fetchClients]);
 
   const handleEditSite = () => {
     setIsEditModalOpen(true);

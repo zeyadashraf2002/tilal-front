@@ -26,15 +26,12 @@ const Dashboard = () => {
     try {
       setLoading(true);
 
-      // ✅ جلب الإحصائيات من Backend
       const statsResponse = await reportsAPI.getDashboardStats();
       setStats(statsResponse.data);
 
-      // ✅ جلب المنتجات منخفضة المخزون (أقل من 5)
       const inventoryResponse = await inventoryAPI.getInventory();
       const items = inventoryResponse.data?.data;
       const allItems = Array.isArray(items) ? items : [];
-      // فلترة المنتجات اللي الكمية فيها أقل من 5
       const lowStock = allItems.filter(
         (item) => item.quantity?.current < item.quantity?.minimum
       );

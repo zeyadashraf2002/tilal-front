@@ -29,16 +29,13 @@ const Workers = () => {
 
   const { allWorkers, loading, error, refetch } = useWorkers();
 
-  // فلترة البيانات في الفرونت
   const filteredWorkers = useMemo(() => {
     let filtered = allWorkers;
 
-    // فلترة حسب الحالة
     if (activeTab === "active") filtered = filtered.filter((w) => w.isActive);
     if (activeTab === "inactive")
       filtered = filtered.filter((w) => !w.isActive);
 
-    // فلترة حسب البحث
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -52,7 +49,6 @@ const Workers = () => {
     return filtered;
   }, [allWorkers, activeTab, searchTerm]);
 
-  // Pagination في الفرونت
   const paginatedWorkers = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
@@ -61,7 +57,6 @@ const Workers = () => {
 
   const totalPages = Math.ceil(filteredWorkers.length / PAGE_SIZE);
 
-  // إعادة تعيين الصفحة عند تغيير الفلاتر
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, activeTab]);
@@ -79,7 +74,7 @@ const Workers = () => {
       await usersAPI.updateUser(confirmModal.worker._id, {
         isActive: !confirmModal.worker.isActive,
       });
-      refetch(); // إعادة جلب البيانات بعد التعديل
+      refetch();
       setConfirmModal({ isOpen: false, worker: null, action: "" });
     } catch (err) {
       alert(t("common.errorOccurred", err));
