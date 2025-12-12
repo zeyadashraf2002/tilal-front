@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Menu, Bell, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { notificationsAPI } from "../services/api";
 import LanguageSwitcher from "../components/common/LanguageSwitcher";
+
+let pollInterval = null;
 
 const Navbar = ({ onMenuClick }) => {
   const { isRTL } = useLanguage();
@@ -12,36 +14,49 @@ const Navbar = ({ onMenuClick }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      // ✅ تقليل التكرار من 30 ثانية إلى دقيقة واحدة
-      const interval = setInterval(fetchNotifications, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
 
-  const fetchNotifications = async () => {
     try {
-      // ✅ إضافة تأخير عشوائي لتوزيع الطلبات
-      await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
-
       const response = await notificationsAPI.getNotifications({
         limit: 10,
-        unreadOnly: true, // ✅ جلب غير المقروءة فقط
+        unreadOnly: true,
       });
+
       const data = response.data.data || [];
       setNotifications(data);
       setUnreadCount(data.filter((n) => !n.read).length);
     } catch (error) {
-      // ✅ تجاهل أخطاء 429 بصمت
       if (error.response?.status !== 429) {
         console.error("Error fetching notifications:", error);
       }
     }
-  };
+  }, [user]);
 
-  const handleMarkAsRead = async (id) => {
+  useEffect(() => {
+    if (!user) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
+    fetchNotifications();
+
+    if (pollInterval) clearInterval(pollInterval);
+
+    const intervalMs = import.meta.env.DEV ? 300000 : 60000;
+
+    pollInterval = setInterval(fetchNotifications, intervalMs);
+
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    };
+  }, [user, fetchNotifications]);
+
+  const markAsRead = async (id) => {
     try {
       await notificationsAPI.markAsRead(id);
       fetchNotifications();
@@ -50,7 +65,7 @@ const Navbar = ({ onMenuClick }) => {
     }
   };
 
-  const handleMarkAllAsRead = async () => {
+  const markAllAsRead = async () => {
     try {
       await notificationsAPI.markAllAsRead();
       fetchNotifications();
@@ -59,13 +74,8 @@ const Navbar = ({ onMenuClick }) => {
     }
   };
 
-  const getNotificationIcon = (type) => {
-    return `📢 NotificationIcon !!!  ${type}`;
-  };
-
   const getTimeAgo = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-
     if (seconds < 60) return "Just now";
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -75,7 +85,6 @@ const Navbar = ({ onMenuClick }) => {
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
-        {/* Menu Button (Mobile) */}
         <button
           onClick={onMenuClick}
           className="lg:hidden p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
@@ -83,12 +92,9 @@ const Navbar = ({ onMenuClick }) => {
           <Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
         </button>
 
-        {/* Spacer for desktop */}
         <div className="hidden lg:block" />
 
-        {/* Right Side */}
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
@@ -102,14 +108,12 @@ const Navbar = ({ onMenuClick }) => {
               )}
             </button>
 
-            {/* Notifications Dropdown */}
             {showNotifications && (
               <div
                 className={`absolute ${
                   isRTL ? "left-0" : "right-0"
                 } mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-w-[calc(100vw-2rem)]`}
               >
-                {/* Header */}
                 <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
                   <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                     Notifications
@@ -122,7 +126,6 @@ const Navbar = ({ onMenuClick }) => {
                   </button>
                 </div>
 
-                {/* Notifications List */}
                 <div className="max-h-80 sm:max-h-96 overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="p-6 text-center text-gray-500">
@@ -134,7 +137,7 @@ const Navbar = ({ onMenuClick }) => {
                       {unreadCount > 0 && (
                         <div className="p-2 border-b border-gray-100">
                           <button
-                            onClick={handleMarkAllAsRead}
+                            onClick={markAllAsRead}
                             className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 w-full text-center py-1"
                           >
                             Mark all as read
@@ -142,34 +145,30 @@ const Navbar = ({ onMenuClick }) => {
                         </div>
                       )}
 
-                      {notifications.map((notification) => (
+                      {notifications.map((n) => (
                         <div
-                          key={notification._id}
+                          key={n._id}
                           className={`p-3 sm:p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                            !notification.read ? "bg-blue-50" : ""
+                            !n.read ? "bg-blue-50" : ""
                           }`}
-                          onClick={() => {
-                            if (!notification.read) {
-                              handleMarkAsRead(notification._id);
-                            }
-                          }}
+                          onClick={() => !n.read && markAsRead(n._id)}
                         >
                           <div className="flex items-start gap-2 sm:gap-3">
                             <span className="text-xl sm:text-2xl shrink-0">
-                              {getNotificationIcon(notification.type)}
+                              Notification
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-medium text-gray-900 mb-1 wrap-break-word">
-                                {notification.title}
+                              <p className="text-xs sm:text-sm font-medium text-gray-900 mb-1">
+                                {n.title}
                               </p>
-                              <p className="text-[10px] sm:text-xs text-gray-600 mb-1 wrap-break-word">
-                                {notification.message}
+                              <p className="text-[10px] sm:text-xs text-gray-600 mb-1">
+                                {n.message}
                               </p>
                               <p className="text-[10px] sm:text-xs text-gray-400">
-                                {getTimeAgo(notification.createdAt)}
+                                {getTimeAgo(n.createdAt)}
                               </p>
                             </div>
-                            {!notification.read && (
+                            {!n.read && (
                               <span className="w-2 h-2 bg-blue-500 rounded-full shrink-0 mt-2" />
                             )}
                           </div>
@@ -179,13 +178,10 @@ const Navbar = ({ onMenuClick }) => {
                   )}
                 </div>
 
-                {/* Footer */}
                 {notifications.length > 0 && (
                   <div className="p-2 sm:p-3 border-t border-gray-200 text-center">
                     <button
-                      onClick={() => {
-                        setShowNotifications(false);
-                      }}
+                      onClick={() => setShowNotifications(false)}
                       className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 py-1"
                     >
                       View all notifications
@@ -196,7 +192,6 @@ const Navbar = ({ onMenuClick }) => {
             )}
           </div>
 
-          {/* Language Switcher */}
           <LanguageSwitcher />
         </div>
       </div>

@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/AdminTaskDetail.jsx - ✅ WITH GPS & IMAGE VISIBILITY
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -29,60 +29,51 @@ const AdminTaskDetail = () => {
   const [beforePreviews, setBeforePreviews] = useState([]);
   const [afterPreviews, setAfterPreviews] = useState([]);
 
-  useEffect(() => {
-    fetchTask();
-  }, [id]);
+  const fetchTask = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await tasksAPI.getTask(id);
+      const data = response.data.data;
 
-  useEffect(() => {
-    if (task) {
-      setReviewStatus(task.adminReview?.status || "pending");
-      setReviewComments(task.adminReview?.comments || "");
+      setTask(data);
+      setReviewStatus(data.adminReview?.status || "pending");
+      setReviewComments(data.adminReview?.comments || "");
 
-      if (task.referenceImages && task.referenceImages.length > 0) {
-        setReferenceImages(task.referenceImages);
+      if (data.referenceImages?.length > 0) {
+        setReferenceImages(data.referenceImages);
 
-        const refCount = task.referenceImages.length;
+        const refCount = data.referenceImages.length;
         const loadedBefore = new Array(refCount).fill(null);
         const loadedAfter = new Array(refCount).fill(null);
 
-        if (task.images?.before) {
-          task.images.before.forEach((img, idx) => {
-            if (idx < refCount) {
-              loadedBefore[idx] = { url: img.url, _id: img._id };
-            }
-          });
-        }
+        data.images?.before?.forEach((img, idx) => {
+          if (idx < refCount)
+            loadedBefore[idx] = { url: img.url, _id: img._id };
+        });
 
-        if (task.images?.after) {
-          task.images.after.forEach((img, idx) => {
-            if (idx < refCount) {
-              loadedAfter[idx] = {
-                url: img.url,
-                _id: img._id,
-                isVisibleToClient: img.isVisibleToClient || false,
-              };
-            }
-          });
-        }
+        data.images?.after?.forEach((img, idx) => {
+          if (idx < refCount)
+            loadedAfter[idx] = {
+              url: img.url,
+              _id: img._id,
+              isVisibleToClient: img.isVisibleToClient || false,
+            };
+        });
 
         setBeforePreviews(loadedBefore);
         setAfterPreviews(loadedAfter);
       }
-    }
-  }, [task]);
-
-  const fetchTask = async () => {
-    try {
-      setLoading(true);
-      const response = await tasksAPI.getTask(id);
-      setTask(response.data.data);
     } catch (error) {
       console.error("Error fetching task:", error);
       alert("Failed to load task details");
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchTask();
+  }, [fetchTask]);
 
   const handleSaveReview = async (status) => {
     try {

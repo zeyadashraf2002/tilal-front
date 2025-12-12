@@ -1,40 +1,40 @@
 // frontend/src/pages/admin/Tasks.jsx - ✅ UPDATED
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Plus, Search, Eye } from 'lucide-react';
-import { tasksAPI } from '../../services/api';
-import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
-import TaskModal from './TaskModal';
-import Loading from '../../components/common/Loading';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Plus, Search, Eye } from "lucide-react";
+import { tasksAPI } from "../../services/api";
+import Card from "../../components/common/Card";
+import Button from "../../components/common/Button";
+import TaskModal from "./TaskModal";
+import Loading from "../../components/common/Loading";
 
 const Tasks = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        const params = statusFilter !== "all" ? { status: statusFilter } : {};
+        const response = await tasksAPI.getTasks(params);
+        setTasks(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchTasks();
   }, [statusFilter]);
-
-  const fetchTasks = async () => {
-    try {
-      setLoading(true);
-      const params = statusFilter !== 'all' ? { status: statusFilter } : {};
-      const response = await tasksAPI.getTasks(params);
-      setTasks(response.data.data || []);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddNew = () => {
     setSelectedTask(null);
@@ -46,8 +46,17 @@ const Tasks = () => {
     setSelectedTask(null);
   };
 
-  const handleSuccess = () => {
-    fetchTasks();
+  const handleSuccess = async () => {
+    try {
+      setLoading(true);
+      const params = statusFilter !== "all" ? { status: statusFilter } : {};
+      const response = await tasksAPI.getTasks(params);
+      setTasks(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRowClick = (task) => {
@@ -56,29 +65,30 @@ const Tasks = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      'pending': 'bg-yellow-100 text-yellow-800',
-      'assigned': 'bg-blue-100 text-blue-800',
-      'in-progress': 'bg-purple-100 text-purple-800',
-      'completed': 'bg-green-100 text-green-800',
-      'review': 'bg-orange-100 text-orange-800',
+      pending: "bg-yellow-100 text-yellow-800",
+      assigned: "bg-blue-100 text-blue-800",
+      "in-progress": "bg-purple-100 text-purple-800",
+      completed: "bg-green-100 text-green-800",
+      review: "bg-orange-100 text-orange-800",
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || "bg-gray-100 text-gray-800";
   };
 
   const getPriorityColor = (priority) => {
     const colors = {
-      'low': 'text-gray-600',
-      'medium': 'text-yellow-600',
-      'high': 'text-orange-600',
-      'urgent': 'text-red-600',
+      low: "text-gray-600",
+      medium: "text-yellow-600",
+      high: "text-orange-600",
+      urgent: "text-red-600",
     };
-    return colors[priority] || 'text-gray-600';
+    return colors[priority] || "text-gray-600";
   };
 
-  const filteredTasks = tasks.filter(task =>
-    task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.client?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.worker?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTasks = tasks.filter(
+    (task) =>
+      task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.client?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.worker?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -91,14 +101,12 @@ const Tasks = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            {t('admin.tasks.title')}
+            {t("admin.tasks.title")}
           </h1>
-          <p className="text-gray-600 mt-1">
-            {tasks.length} tasks found
-          </p>
+          <p className="text-gray-600 mt-1">{tasks.length} tasks found</p>
         </div>
         <Button onClick={handleAddNew} icon={Plus}>
-          {t('admin.tasks.createTask')}
+          {t("admin.tasks.createTask")}
         </Button>
       </div>
 
@@ -109,7 +117,7 @@ const Tasks = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder={t('common.search')}
+              placeholder={t("common.search")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -118,30 +126,30 @@ const Tasks = () => {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button
-            variant={statusFilter === 'all' ? 'primary' : 'secondary'}
+            variant={statusFilter === "all" ? "primary" : "secondary"}
             size="sm"
-            onClick={() => setStatusFilter('all')}
+            onClick={() => setStatusFilter("all")}
           >
             All ({tasks.length})
           </Button>
           <Button
-            variant={statusFilter === 'pending' ? 'primary' : 'secondary'}
+            variant={statusFilter === "pending" ? "primary" : "secondary"}
             size="sm"
-            onClick={() => setStatusFilter('pending')}
+            onClick={() => setStatusFilter("pending")}
           >
             Pending
           </Button>
           <Button
-            variant={statusFilter === 'in-progress' ? 'primary' : 'secondary'}
+            variant={statusFilter === "in-progress" ? "primary" : "secondary"}
             size="sm"
-            onClick={() => setStatusFilter('in-progress')}
+            onClick={() => setStatusFilter("in-progress")}
           >
             In Progress
           </Button>
           <Button
-            variant={statusFilter === 'completed' ? 'primary' : 'secondary'}
+            variant={statusFilter === "completed" ? "primary" : "secondary"}
             size="sm"
-            onClick={() => setStatusFilter('completed')}
+            onClick={() => setStatusFilter("completed")}
           >
             Completed
           </Button>
@@ -152,7 +160,7 @@ const Tasks = () => {
       <Card>
         {filteredTasks.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">{t('common.noData')}</p>
+            <p className="text-gray-500">{t("common.noData")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -193,14 +201,18 @@ const Tasks = () => {
                     className="hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{task.title}</div>
-                      <div className="text-sm text-gray-500 truncate max-w-xs">{task.description}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {task.title}
+                      </div>
+                      <div className="text-sm text-gray-500 truncate max-w-xs">
+                        {task.description}
+                      </div>
                     </td>
                     {/* ✅ UPDATED: Show Site + Section */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex flex-col">
                         <span className="font-medium text-gray-900">
-                          {task.site?.name || 'N/A'}
+                          {task.site?.name || "N/A"}
                         </span>
                         {task.section && (
                           <span className="text-xs text-gray-500">
@@ -210,18 +222,26 @@ const Tasks = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {task.client?.name || 'N/A'}
+                      {task.client?.name || "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {task.worker?.name || 'Unassigned'}
+                      {task.worker?.name || "Unassigned"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(task.status)}`}>
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                          task.status
+                        )}`}
+                      >
                         {t(`status.${task.status}`)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm font-medium ${getPriorityColor(task.priority)}`}>
+                      <span
+                        className={`text-sm font-medium ${getPriorityColor(
+                          task.priority
+                        )}`}
+                      >
                         {t(`priority.${task.priority}`)}
                       </span>
                     </td>

@@ -18,21 +18,21 @@ const Inventory = () => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        const response = await inventoryAPI.getInventory();
+        setInventory(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
+        alert("Failed to fetch inventory. Check console for details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchInventory();
   }, []);
-
-  const fetchInventory = async () => {
-    try {
-      setLoading(true);
-      const response = await inventoryAPI.getInventory({ search: searchTerm });
-      setInventory(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-      alert("Failed to fetch inventory. Check console for details.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEdit = (item) => {
     setSelectedItem(item);
@@ -43,10 +43,14 @@ const Inventory = () => {
     if (window.confirm(t("common.confirmDelete"))) {
       try {
         await inventoryAPI.deleteInventoryItem(id);
-        fetchInventory();
+        setLoading(true);
+        const response = await inventoryAPI.getInventory();
+        setInventory(response.data.data || []);
       } catch (error) {
         console.error("Error deleting item:", error);
         alert(error.response?.data?.message || "Failed to delete item");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -61,8 +65,17 @@ const Inventory = () => {
     setSelectedItem(null);
   };
 
-  const handleSuccess = () => {
-    fetchInventory();
+  const handleSuccess = async () => {
+    try {
+      setLoading(true);
+      const response = await inventoryAPI.getInventory();
+      setInventory(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching inventory:", error);
+      alert("Failed to fetch inventory. Check console for details.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStockStatus = (item) => {
