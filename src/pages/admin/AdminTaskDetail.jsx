@@ -202,19 +202,22 @@ const AdminTaskDetail = () => {
                     <img
                       src={task.site.coverImage.url}
                       alt={task.site.name}
-                      className="w-20 h-20 rounded object-cover shrink-0"
+                      className="w-40 h-20 rounded object-cover shrink-0"
                     />
                   ) : (
                     <div className="w-20 h-20 bg-primary-100 rounded flex items-center justify-center shrink-0">
                       <MapPin className="w-10 h-10 text-primary-400" />
                     </div>
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 flex flex-col space-y-1">
                     <h3 className="font-semibold text-lg text-gray-900">
                       {task.site.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Type: {task.site.siteType} • Area: {task.site.totalArea}m²
+                      Type: {task.site.siteType}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Area: {task.site.totalArea}m²
                     </p>
                   </div>
                 </div>

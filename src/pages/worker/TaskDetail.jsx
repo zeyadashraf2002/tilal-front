@@ -42,6 +42,28 @@ const TaskDetail = () => {
   const [showAddMaterial, setShowAddMaterial] = useState(false);
 
   useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        setLoading(true);
+        const response = await tasksAPI.getTask(id);
+        setTask(response.data.data);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        alert("Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchInventory = async () => {
+      try {
+        const response = await inventoryAPI.getInventory();
+        setAvailableInventory(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
+      }
+    };
+
     fetchTask();
     fetchInventory();
   }, [id]);
@@ -99,28 +121,6 @@ const TaskDetail = () => {
     }
   }, [task]);
 
-  const fetchTask = async () => {
-    try {
-      setLoading(true);
-      const response = await tasksAPI.getTask(id);
-      setTask(response.data.data);
-    } catch (error) {
-      console.error("Error fetching task:", error);
-      alert("Failed to load task details");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchInventory = async () => {
-    try {
-      const response = await inventoryAPI.getInventory();
-      setAvailableInventory(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-    }
-  };
-
   // ============================================
   // Material Management Functions
   // ============================================
@@ -166,8 +166,16 @@ const TaskDetail = () => {
         })),
       });
 
-      alert("Materials confirmed successfully");
-      fetchTask();
+      try {
+        setLoading(true);
+        const response = await tasksAPI.getTask(id);
+        setTask(response.data.data);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        alert("Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
     } catch (error) {
       console.error("Error confirming materials:", error);
       alert("Failed to confirm materials");
@@ -195,11 +203,16 @@ const TaskDetail = () => {
       await tasksAPI.uploadTaskImages(id, formData);
 
       // Refresh task to get updated images
-      await fetchTask();
-
-      alert(
-        `${type === "before" ? "Before" : "After"} photo uploaded successfully!`
-      );
+      try {
+        setLoading(true);
+        const response = await tasksAPI.getTask(id);
+        setTask(response.data.data);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        alert("Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
     } catch (error) {
       console.error("Error uploading image:", error);
       alert("Failed to upload image");
@@ -231,30 +244,73 @@ const TaskDetail = () => {
   // ============================================
   const handleStartTask = async () => {
     try {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            await tasksAPI.startTask(id, {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-            fetchTask();
-          },
-          (error) => {
-            console.error("Geolocation error:", error);
-            alert("Could not get your location");
+      const getLocation = () =>
+        new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+            reject(new Error("Geolocation not supported"));
+            return;
           }
-        );
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: Infinity,
+          });
+        });
+
+      try {
+        const position = await getLocation();
+        await tasksAPI.startTask(id, {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        alert("Task started successfully!");
+        try {
+          setLoading(true);
+          const response = await tasksAPI.getTask(id);
+          setTask(response.data.data);
+        } catch (error) {
+          console.error("Error fetching task:", error);
+          alert("Failed to load task details");
+        } finally {
+          setLoading(false);
+        }
+      } catch (locationError) {
+        if (locationError.code === 1) {
+          alert(
+            "Location access denied. Please enable location access in your browser settings and try again."
+          );
+          return;
+        } else if (locationError.code === 2) {
+          const confirm = window.confirm(
+            "Unable to get your location. Do you want to start the task without saving location?"
+          );
+          if (confirm) {
+            await tasksAPI.startTask(id, {});
+            alert("Task started successfully (location not saved)!");
+            try {
+              setLoading(true);
+              const response = await tasksAPI.getTask(id);
+              setTask(response.data.data);
+            } catch (error) {
+              console.error("Error fetching task:", error);
+              alert("Failed to load task details");
+            } finally {
+              setLoading(false);
+            }
+          }
+          return;
+        } else {
+          alert("An error occurred while getting location. Please try again.");
+          return;
+        }
       }
     } catch (error) {
       console.error("Error starting task:", error);
-      alert("Failed to start task");
+      alert(error.response?.data?.message || "Failed to start task");
     }
   };
-
   const handleFinishTask = async () => {
     try {
-      // ✅ Validation for reference-based images
       const beforeCount = beforePreviews.filter((p) => p !== null).length;
       const afterCount = afterPreviews.filter((p) => p !== null).length;
       const refCount = referenceImages.length;
@@ -273,7 +329,6 @@ const TaskDetail = () => {
           return;
         }
       } else {
-        // Fallback: at least one before/after if no reference images
         if (beforeCount === 0) {
           alert("Please upload at least one before photo");
           return;
@@ -295,7 +350,6 @@ const TaskDetail = () => {
 
       setUploading(true);
 
-      // Upload before images (filter out nulls)
       const beforeFilesToUpload = beforeImages.filter((f) => f !== null);
       if (beforeFilesToUpload.length > 0) {
         const beforeFormData = new FormData();
@@ -304,11 +358,9 @@ const TaskDetail = () => {
         });
         beforeFormData.append("imageType", "before");
         beforeFormData.append("isVisibleToClient", "true");
-
         await tasksAPI.uploadTaskImages(id, beforeFormData);
       }
 
-      // Upload after images (filter out nulls)
       const afterFilesToUpload = afterImages.filter((f) => f !== null);
       if (afterFilesToUpload.length > 0) {
         const afterFormData = new FormData();
@@ -317,29 +369,50 @@ const TaskDetail = () => {
         });
         afterFormData.append("imageType", "after");
         afterFormData.append("isVisibleToClient", "true");
-
         await tasksAPI.uploadTaskImages(id, afterFormData);
       }
 
-      // Complete task with location
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            await tasksAPI.completeTask(id, {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
+      const getLocation = () =>
+        new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+            reject(new Error("Geolocation not supported"));
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: Infinity,
+          });
+        });
 
-            alert("Task completed successfully!");
-            navigate("/worker/tasks");
-          },
-          async (error) => {
-            console.error("Geolocation error:", error);
+      try {
+        const position = await getLocation();
+        await tasksAPI.completeTask(id, {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        alert("Task completed successfully!");
+        navigate("/worker/tasks");
+      } catch (locationError) {
+        if (locationError.code === 1) {
+          alert(
+            "Location access denied. Please enable location access in your browser settings and try again."
+          );
+          return;
+        } else if (locationError.code === 2) {
+          const confirm = window.confirm(
+            "Unable to get your location. Do you want to complete the task without saving location?"
+          );
+          if (confirm) {
             await tasksAPI.completeTask(id, {});
-            alert("Task completed successfully!");
+            alert("Task completed successfully (location not saved)!");
             navigate("/worker/tasks");
           }
-        );
+          return;
+        } else {
+          alert("An error occurred while getting location. Please try again.");
+          return;
+        }
       }
     } catch (error) {
       console.error("Error finishing task:", error);
@@ -440,24 +513,27 @@ const TaskDetail = () => {
           {task.site && (
             <Card title="📍 Site Information">
               <div className="space-y-3">
-                <div className="flex items-start gap-3">
+                <div className="flex gap-3">
                   {task.site.coverImage?.url ? (
                     <img
                       src={task.site.coverImage.url}
                       alt={task.site.name}
-                      className="w-20 h-20 rounded object-cover shrink-0"
+                      className="w-30 h-20 rounded object-cover shrink-0"
                     />
                   ) : (
                     <div className="w-20 h-20 bg-primary-100 rounded flex items-center justify-center shrink-0">
                       <MapPin className="w-10 h-10 text-primary-400" />
                     </div>
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 flex flex-col space-y-1">
                     <h3 className="font-semibold text-lg text-gray-900">
                       {task.site.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Type: {task.site.siteType} • Area: {task.site.totalArea}m²
+                      Type: {task.site.siteType}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      • Area: {task.site.totalArea}m²
                     </p>
                     {task.site.description && (
                       <p className="text-sm text-gray-600 mt-2">
@@ -576,7 +652,7 @@ const TaskDetail = () => {
                                 )}
                               {beforePreviews[refIndex].existing && (
                                 <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                                  ✅ Uploaded
+                                  Uploaded
                                 </div>
                               )}
                             </div>
@@ -608,7 +684,7 @@ const TaskDetail = () => {
                         {/* After Photo Upload */}
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-2">
-                            ✅ After Work
+                            After Work
                           </label>
                           {afterPreviews[refIndex] ? (
                             <div className="relative group">
@@ -632,7 +708,7 @@ const TaskDetail = () => {
                                 )}
                               {afterPreviews[refIndex].existing && (
                                 <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                                  ✅ Uploaded
+                                  Uploaded
                                 </div>
                               )}
                             </div>
@@ -842,7 +918,7 @@ const TaskDetail = () => {
                         onClick={handleConfirmMaterials}
                         icon={CheckCircle}
                       >
-                        ✅ Confirm All Materials ({selectedMaterials.length})
+                        Confirm All Materials ({selectedMaterials.length})
                       </Button>
                       <p className="text-xs text-orange-600 text-center mt-2">
                         You must confirm materials before finishing task
@@ -916,7 +992,7 @@ const TaskDetail = () => {
                       referenceImages.length
                   }
                 >
-                  {uploading ? "⏳ Uploading Images..." : "✅ Finish Task"}
+                  {uploading ? "⏳ Uploading Images..." : "Finish Task"}
                 </Button>
 
                 {!materialsConfirmed && (
@@ -930,7 +1006,7 @@ const TaskDetail = () => {
                 {materialsConfirmed && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
                     <p className="text-sm text-blue-800 font-medium">
-                      ✅ Ready to finish! Make sure all photos are uploaded
+                      Ready to finish! Make sure all photos are uploaded
                     </p>
                   </div>
                 )}
