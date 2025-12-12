@@ -42,6 +42,28 @@ const TaskDetail = () => {
   const [showAddMaterial, setShowAddMaterial] = useState(false);
 
   useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        setLoading(true);
+        const response = await tasksAPI.getTask(id);
+        setTask(response.data.data);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        alert("Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchInventory = async () => {
+      try {
+        const response = await inventoryAPI.getInventory();
+        setAvailableInventory(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
+      }
+    };
+
     fetchTask();
     fetchInventory();
   }, [id]);
@@ -99,28 +121,6 @@ const TaskDetail = () => {
     }
   }, [task]);
 
-  const fetchTask = async () => {
-    try {
-      setLoading(true);
-      const response = await tasksAPI.getTask(id);
-      setTask(response.data.data);
-    } catch (error) {
-      console.error("Error fetching task:", error);
-      alert("Failed to load task details");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchInventory = async () => {
-    try {
-      const response = await inventoryAPI.getInventory();
-      setAvailableInventory(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-    }
-  };
-
   // ============================================
   // Material Management Functions
   // ============================================
@@ -166,7 +166,16 @@ const TaskDetail = () => {
         })),
       });
 
-      fetchTask();
+      try {
+        setLoading(true);
+        const response = await tasksAPI.getTask(id);
+        setTask(response.data.data);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        alert("Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
     } catch (error) {
       console.error("Error confirming materials:", error);
       alert("Failed to confirm materials");
@@ -194,7 +203,16 @@ const TaskDetail = () => {
       await tasksAPI.uploadTaskImages(id, formData);
 
       // Refresh task to get updated images
-      await fetchTask();
+      try {
+        setLoading(true);
+        const response = await tasksAPI.getTask(id);
+        setTask(response.data.data);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        alert("Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
     } catch (error) {
       console.error("Error uploading image:", error);
       alert("Failed to upload image");
@@ -226,27 +244,71 @@ const TaskDetail = () => {
   // ============================================
   const handleStartTask = async () => {
     try {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            await tasksAPI.startTask(id, {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-            fetchTask();
-          },
-          (error) => {
-            console.error("Geolocation error:", error);
-            alert("Could not get your location");
+      const getLocation = () =>
+        new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+            reject(new Error("Geolocation not supported"));
+            return;
           }
-        );
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: Infinity,
+          });
+        });
+
+      try {
+        const position = await getLocation();
+        await tasksAPI.startTask(id, {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        alert("Task started successfully!");
+        try {
+          setLoading(true);
+          const response = await tasksAPI.getTask(id);
+          setTask(response.data.data);
+        } catch (error) {
+          console.error("Error fetching task:", error);
+          alert("Failed to load task details");
+        } finally {
+          setLoading(false);
+        }
+      } catch (locationError) {
+        if (locationError.code === 1) {
+          alert(
+            "Location access denied. Please enable location access in your browser settings and try again."
+          );
+          return;
+        } else if (locationError.code === 2) {
+          const confirm = window.confirm(
+            "Unable to get your location. Do you want to start the task without saving location?"
+          );
+          if (confirm) {
+            await tasksAPI.startTask(id, {});
+            alert("Task started successfully (location not saved)!");
+            try {
+              setLoading(true);
+              const response = await tasksAPI.getTask(id);
+              setTask(response.data.data);
+            } catch (error) {
+              console.error("Error fetching task:", error);
+              alert("Failed to load task details");
+            } finally {
+              setLoading(false);
+            }
+          }
+          return;
+        } else {
+          alert("An error occurred while getting location. Please try again.");
+          return;
+        }
       }
     } catch (error) {
       console.error("Error starting task:", error);
-      alert("Failed to start task");
+      alert(error.response?.data?.message || "Failed to start task");
     }
   };
-
   const handleFinishTask = async () => {
     try {
       const beforeCount = beforePreviews.filter((p) => p !== null).length;
@@ -313,32 +375,48 @@ const TaskDetail = () => {
       const getLocation = () =>
         new Promise((resolve, reject) => {
           if (!navigator.geolocation) {
-            reject(new Error("Geolocation is not supported by your browser."));
+            reject(new Error("Geolocation not supported"));
             return;
           }
           navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 10000,
-            maximumAge: 60000,
             enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: Infinity,
           });
         });
 
-      const position = await getLocation();
-      await tasksAPI.completeTask(id, {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      });
-      alert("Task completed successfully!");
-      navigate("/worker/tasks");
+      try {
+        const position = await getLocation();
+        await tasksAPI.completeTask(id, {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        alert("Task completed successfully!");
+        navigate("/worker/tasks");
+      } catch (locationError) {
+        if (locationError.code === 1) {
+          alert(
+            "Location access denied. Please enable location access in your browser settings and try again."
+          );
+          return;
+        } else if (locationError.code === 2) {
+          const confirm = window.confirm(
+            "Unable to get your location. Do you want to complete the task without saving location?"
+          );
+          if (confirm) {
+            await tasksAPI.completeTask(id, {});
+            alert("Task completed successfully (location not saved)!");
+            navigate("/worker/tasks");
+          }
+          return;
+        } else {
+          alert("An error occurred while getting location. Please try again.");
+          return;
+        }
+      }
     } catch (error) {
       console.error("Error finishing task:", error);
-      if (error.message.includes("Geolocation")) {
-        alert(
-          "Failed to get location. Please allow location access and try again."
-        );
-      } else {
-        alert(error.response?.data?.message || "Failed to complete task");
-      }
+      alert(error.response?.data?.message || "Failed to complete task");
     } finally {
       setUploading(false);
     }
@@ -435,24 +513,27 @@ const TaskDetail = () => {
           {task.site && (
             <Card title="📍 Site Information">
               <div className="space-y-3">
-                <div className="flex items-start gap-3">
+                <div className="flex gap-3">
                   {task.site.coverImage?.url ? (
                     <img
                       src={task.site.coverImage.url}
                       alt={task.site.name}
-                      className="w-20 h-20 rounded object-cover shrink-0"
+                      className="w-30 h-20 rounded object-cover shrink-0"
                     />
                   ) : (
                     <div className="w-20 h-20 bg-primary-100 rounded flex items-center justify-center shrink-0">
                       <MapPin className="w-10 h-10 text-primary-400" />
                     </div>
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 flex flex-col space-y-1">
                     <h3 className="font-semibold text-lg text-gray-900">
                       {task.site.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Type: {task.site.siteType} • Area: {task.site.totalArea}m²
+                      Type: {task.site.siteType}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      • Area: {task.site.totalArea}m²
                     </p>
                     {task.site.description && (
                       <p className="text-sm text-gray-600 mt-2">
