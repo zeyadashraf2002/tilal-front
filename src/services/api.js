@@ -168,7 +168,7 @@ export const clientsAPI = {
   createClient: (data) => api.post("/clients", data),
   updateClient: (id, data) => api.put(`/clients/${id}`, data),
   deleteClient: (id) => api.delete(`/clients/${id}`),
-  toggleClientStatus: (id) => api.put(`/clients/${id}/toggle-status`)
+  toggleClientStatus: (id) => api.put(`/clients/${id}/toggle-status`),
 };
 
 // ✅ Users API
@@ -217,11 +217,9 @@ export const tasksAPI = {
   createTask: (data) => api.post("/tasks", data),
   updateTask: (id, data) => api.put(`/tasks/${id}`, data),
   deleteTask: (id) => api.delete(`/tasks/${id}`),
-  assignTask: (id, data) => api.post(`/tasks/${id}/assign`, data),
-  startTask: (id, location) => api.post(`/tasks/${id}/start`, location),
-  completeTask: (id, location) => api.post(`/tasks/${id}/complete`, location),
-
-  // Upload images
+  startTask: (id, data) => api.post(`/tasks/${id}/start`, data),
+  completeTask: (id, data) => api.post(`/tasks/${id}/complete`, data),
+  assignTask: (id, workerId) => api.post(`/tasks/${id}/assign`, { workerId }),
   uploadTaskImages: (id, formData) =>
     api.post(`/tasks/${id}/images`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -238,10 +236,18 @@ export const tasksAPI = {
       imageType,
       isVisible,
     }),
-  submitFeedback: (id, formData) =>
-    api.post(`/tasks/${id}/feedback`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    }),
+
+  // ✅ Client Feedback
+  submitFeedback: (id, formData) => {
+    return api.post(`/tasks/${id}/feedback`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+
+  // ✅ NEW: Mark task as satisfied (simple button)
+  markSatisfied: (id) => api.post(`/tasks/${id}/satisfied`),
 };
 
 // ✅ Plants API
@@ -265,7 +271,7 @@ export const inventoryAPI = {
   getInventory: (params) => api.get("/inventory", { params }),
   getInventoryItem: (id) => api.get(`/inventory/${id}`),
   createInventoryItem: (data) => api.post("/inventory", data),
-   getLowStockItems: () => api.get("/inventory/low-stock"),
+  getLowStockItems: () => api.get("/inventory/low-stock"),
   updateInventoryItem: (id, data) => api.put(`/inventory/${id}`, data),
   deleteInventoryItem: (id) => api.delete(`/inventory/${id}`),
   withdrawInventory: (id, data) => api.post(`/inventory/${id}/withdraw`, data),

@@ -1,4 +1,4 @@
-// frontend/src/pages/admin/AdminTaskDetail.jsx - ✅ WITH GPS & IMAGE VISIBILITY
+// frontend/src/pages/admin/AdminTaskDetail.jsx - ✅ WITH CLIENT FEEDBACK DISPLAY
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,10 @@ import {
   XCircle,
   MapPin,
   Navigation,
+  Star,
+  MessageSquare,
+  ThumbsUp,
+  AlertTriangle,
 } from "lucide-react";
 import { tasksAPI } from "../../services/api";
 import Card from "../../components/common/Card";
@@ -84,14 +88,14 @@ const AdminTaskDetail = () => {
 
       setSaving(true);
 
-      let newTaskStatus = task.status;
-      if (status === "approved") {
-        newTaskStatus = "completed";
-      } else if (status === "pending") {
-        newTaskStatus = "in-progress";
-      } else if (status === "rejected") {
-        newTaskStatus = "in-progress";
-      }
+      // let newTaskStatus = task.status;
+      // if (status === "approved") {
+      //   newTaskStatus = "completed";
+      // } else if (status === "pending") {
+      //   newTaskStatus = "in-progress";
+      // } else if (status === "rejected") {
+      //   newTaskStatus = "in-progress";
+      // }
 
       await tasksAPI.updateTask(id, {
         adminReview: {
@@ -99,7 +103,7 @@ const AdminTaskDetail = () => {
           comments: reviewComments,
           reviewedAt: new Date(),
         },
-        status: newTaskStatus,
+        // status: newTaskStatus,
       });
 
       setReviewStatus(status);
@@ -193,9 +197,114 @@ const AdminTaskDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* ✅ CLIENT FEEDBACK SECTION */}
+          {task.feedback && (
+            <Card title="💬 Client Feedback">
+              <div
+                className={`rounded-xl p-5 border-2 border-gray-50 ${
+                  task.feedback.isSatisfiedOnly
+                    ? "bg-linear-to-br from-green-50 to-emerald-50 "
+                    : task.feedback.rating >= 4
+                    ? "bg-linear-to-br from-green-50 to-emerald-50 "
+                    : task.feedback.rating === 3
+                    ? "bg-linear-to-br from-yellow-50 to-amber-50 "
+                    : "bg-linear-to-br from-red-50 to-rose-50 "
+                }`}
+              >
+                {/* Rating Stars */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    {task.feedback.isSatisfiedOnly ? (
+                      <div className="flex items-center gap-2 bg-green-100 px-4 py-2 rounded-full">
+                        <ThumbsUp className="w-5 h-5 text-green-600" />
+                        <span className="font-bold text-green-800">
+                          Client is Satisfied ✓
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-sm font-medium text-gray-700">
+                          Rating:
+                        </span>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-6 h-6 ${
+                                star <= task.feedback.rating
+                                  ? "fill-yellow-500 text-yellow-500"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-xl font-bold text-gray-800">
+                          {task.feedback.rating}/5
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-gray-600">
+                    {new Date(task.feedback.submittedAt).toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Comment */}
+                {task.feedback.comment && (
+                  <div className="bg-white/80 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-2">
+                      <MessageSquare className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700 mb-1">
+                          Client's Comment:
+                        </p>
+                        <p className="text-gray-900 leading-relaxed">
+                          "{task.feedback.comment}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Image Number Issue */}
+                {task.feedback.imageNumber && (
+                  <div className="bg-orange-100 border-l-4 border-orange-500 rounded p-3 mb-4">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-orange-900">
+                          Issue Reported on Image
+                        </p>
+                        <p className="text-sm text-orange-800">
+                          Image #{task.feedback.imageNumber} needs attention
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Feedback Image */}
+                {task.feedback.image && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Evidence Photo:
+                    </p>
+                    <img
+                      src={task.feedback.image}
+                      alt="Feedback evidence"
+                      className="w-full max-h-80 object-contain rounded-lg border-2 border-white shadow-lg cursor-pointer hover:opacity-90"
+                      onClick={() => window.open(task.feedback.image, "_blank")}
+                    />
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
           {/* Site & Section Info */}
           {task.site && (
-            <Card title="📍 Site Information">
+            <Card title="🏢 Site Information">
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   {task.site.coverImage?.url ? (
@@ -242,7 +351,7 @@ const AdminTaskDetail = () => {
             </Card>
           )}
 
-          {/* ✅ GPS Tracking Card */}
+          {/* GPS Tracking Card */}
           {(task.startLocation || task.endLocation) && (
             <Card title="🌍 GPS Tracking">
               <div className="space-y-4">
@@ -397,7 +506,7 @@ const AdminTaskDetail = () => {
                               ✅ Uploaded
                             </div>
 
-                            {/* ✅ Toggle Visibility to Client */}
+                            {/* Toggle Visibility to Client */}
                             <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <label className="flex items-center gap-2 text-xs cursor-pointer">
                                 <input
@@ -452,7 +561,7 @@ const AdminTaskDetail = () => {
           )}
 
           {/* Admin Review */}
-          <Card title="🔍 Admin Review & Approval">
+          <Card title="🛡️ Admin Review & Approval">
             <div className="space-y-4">
               <div
                 className={`p-4 rounded-lg border-2 ${

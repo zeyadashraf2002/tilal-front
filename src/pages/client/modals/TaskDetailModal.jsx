@@ -1,4 +1,12 @@
-import { Eye, Star, MapPin, Calendar, CheckCircle } from "lucide-react";
+// frontend/src/pages/client/modals/TaskDetailModal.jsx - ✅ UPDATED: Support Satisfied Display
+import {
+  Eye,
+  Star,
+  MapPin,
+  Calendar,
+  CheckCircle,
+  ThumbsUp,
+} from "lucide-react";
 import Modal from "../../../components/common/Modal";
 import Button from "../../../components/common/Button";
 
@@ -22,46 +30,77 @@ const TaskDetailModal = ({
           <div className="max-w-full">
             {/* Feedback Banner */}
             {task.feedback && (
-              <div className="bg-linear-to-r from-yellow-50 to-amber-50 border-b-4 border-amber-400 rounded-xl p-4 mb-6 shadow-sm">
+              <div
+                className={`border-b-4 rounded-xl p-4 mb-6 shadow-sm ${
+                  task.feedback.isSatisfiedOnly
+                    ? "bg-linear-to-br from-green-50 to-emerald-50 border-green-400"
+                    : "bg-linear-to-br from-yellow-50 to-amber-50 border-amber-400"
+                }`}
+              >
                 <div className="flex items-start gap-3">
-                  <div className="bg-amber-100 p-2 rounded-full shrink-0">
-                    <Star className="w-5 h-5 text-amber-600" />
+                  <div
+                    className={`p-2 rounded-full shrink-0 ${
+                      task.feedback.isSatisfiedOnly
+                        ? "bg-green-100"
+                        : "bg-amber-100"
+                    }`}
+                  >
+                    {task.feedback.isSatisfiedOnly ? (
+                      <ThumbsUp className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <Star className="w-5 h-5 text-amber-600" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      Your Feedback
+                      {task.feedback.isSatisfiedOnly
+                        ? "You're Satisfied with this Work ✓"
+                        : "Your Feedback"}
                     </h3>
-                    <div className="flex items-center gap-1 mb-2 flex-wrap">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-5 h-5 ${
-                            star <= task.feedback.rating
-                              ? "fill-amber-500 text-amber-500"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                      <span className="ml-2 text-base font-semibold text-gray-700">
-                        {task.feedback.rating}/5
-                      </span>
-                    </div>
-                    {task.feedback.comment && (
-                      <p className="text-sm text-gray-800 leading-relaxed wrap-break-word">
-                        "{task.feedback.comment}"
-                      </p>
+
+                    {!task.feedback.isSatisfiedOnly && (
+                      <>
+                        <div className="flex items-center gap-1 mb-2 flex-wrap">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-5 h-5 ${
+                                star <= task.feedback.rating
+                                  ? "fill-amber-500 text-amber-500"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                          <span className="ml-2 text-base font-semibold text-gray-700">
+                            {task.feedback.rating}/5
+                          </span>
+                        </div>
+                        {task.feedback.comment && (
+                          <p className="text-sm text-gray-800 leading-relaxed wrap-break-word">
+                            "{task.feedback.comment}"
+                          </p>
+                        )}
+                        {task.feedback.imageNumber && (
+                          <p className="mt-2 text-xs font-medium text-amber-700 bg-amber-100 inline-block px-3 py-1 rounded-full">
+                            Issue reported on Image #{task.feedback.imageNumber}
+                          </p>
+                        )}
+                        {task.feedback.image && (
+                          <img
+                            src={task.feedback.image}
+                            alt="Feedback evidence"
+                            className="mt-3 w-full max-h-48 object-cover rounded-lg shadow-lg border-2 border-white cursor-pointer hover:opacity-90"
+                            onClick={() => onImageClick(task.feedback.image)}
+                          />
+                        )}
+                      </>
                     )}
-                    {task.feedback.imageNumber && (
-                      <p className="mt-2 text-xs font-medium text-amber-700 bg-amber-100 inline-block px-3 py-1 rounded-full">
-                        Issue reported on Image #{task.feedback.imageNumber}
+
+                    {task.feedback.isSatisfiedOnly && (
+                      <p className="text-sm text-green-800 leading-relaxed">
+                        Thank you for confirming you're satisfied with the
+                        completed work!
                       </p>
-                    )}
-                    {task.feedback.image && (
-                      <img
-                        src={task.feedback.image}
-                        alt="Feedback evidence"
-                        className="mt-3 w-full max-h-48 object-cover rounded-lg shadow-lg border-2 border-white"
-                      />
                     )}
                   </div>
                 </div>
@@ -131,7 +170,7 @@ const TaskDetailModal = ({
 
               {/* Right Column – After Work Photos */}
               <div className="min-w-0">
-                <div className="bg-linear-to-r from-gray-50 to-white rounded-xl p-4 border border-gray-200">
+                <div className="bg-linear-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2 flex-wrap">
                     <span className="text-green-600">After Work Photos</span>
                     {visibleAfterImages.length > 0 && (
@@ -154,7 +193,7 @@ const TaskDetailModal = ({
                             alt={`After work ${idx + 1}`}
                             className="w-full h-40 object-cover"
                           />
-                          <div className="absolute inset-0 bg-linear-to-r from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                          <div className="absolute inset-0 bg-linear-to-br from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                             <div className="p-3 text-white">
                               <Eye className="w-6 h-6" />
                             </div>

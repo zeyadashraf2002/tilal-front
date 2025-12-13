@@ -1,3 +1,4 @@
+// frontend/src/pages/client/ClientPortal.jsx - ✅ WITH SATISFIED BUTTON
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,6 +9,7 @@ import {
   Calendar,
   CheckCircle,
   ImageIcon,
+  ThumbsUp,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { tasksAPI, clientsAPI } from "../../services/api";
@@ -104,6 +106,29 @@ const ClientPortal = () => {
     } catch (error) {
       console.error("Error submitting feedback:", error);
       alert("Failed to submit feedback");
+    }
+  };
+
+  // ✅ NEW: Handle Satisfied Button
+  const handleMarkSatisfied = async (taskId) => {
+    if (
+      !window.confirm(
+        "Are you satisfied with this work? This will mark the task as completed with 5 stars."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await tasksAPI.markSatisfied(taskId);
+
+      setSuccessMessage("Thank you! Task marked as satisfied ✓");
+      setShowSuccessToast(true);
+
+      await fetchTasks();
+    } catch (error) {
+      console.error("Error marking satisfied:", error);
+      alert("Failed to mark task as satisfied");
     }
   };
 
@@ -227,26 +252,45 @@ const ClientPortal = () => {
                     <div className="flex-1 p-6 space-y-4 min-h-0">
                       {/* Feedback Badge */}
                       {task.feedback && (
-                        <div className="bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
+                        <div
+                          className={`border rounded-lg p-3 ${
+                            task.feedback.isSatisfiedOnly
+                              ? "bg-linear-to-br from-green-50 to-emerald-50 border-green-200"
+                              : "bg-linear-to-br from-yellow-50 to-orange-50 border-yellow-200"
+                          }`}
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
-                              <span className="text-sm font-semibold text-yellow-800">
-                                Your Rating
-                              </span>
+                              {task.feedback.isSatisfiedOnly ? (
+                                <>
+                                  <ThumbsUp className="w-5 h-5 text-green-600" />
+                                  <span className="text-sm font-semibold text-green-800">
+                                    You're Satisfied ✓
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+                                  <span className="text-sm font-semibold text-yellow-800">
+                                    Your Rating
+                                  </span>
+                                </>
+                              )}
                             </div>
-                            <div className="flex items-center gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-5 h-5 ${
-                                    star <= task.feedback.rating
-                                      ? "fill-yellow-500 text-yellow-500"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
+                            {!task.feedback.isSatisfiedOnly && (
+                              <div className="flex items-center gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`w-5 h-5 ${
+                                      star <= task.feedback.rating
+                                        ? "fill-yellow-500 text-yellow-500"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -306,28 +350,41 @@ const ClientPortal = () => {
 
                     {/* FIXED BUTTONS FOOTER – always stuck to the bottom */}
                     <div className="border-t border-gray-200 px-6 py-4 mt-auto">
-                      <div className="flex gap-3">
+                      <div className="flex gap-2 justify-center">
                         <Button
                           variant="primary"
                           size="sm"
                           onClick={() => handleViewTask(task)}
                           icon={Eye}
-                          className="flex-1"
                         >
                           View Details
                         </Button>
 
-                        {task.status === "completed" && !task.feedback && (
-                          <Button
-                            variant="success"
-                            size="sm"
-                            onClick={() => handleOpenFeedbackModal(task)}
-                            icon={Star}
-                            className="flex-1"
-                          >
-                            Feedback
-                          </Button>
-                        )}
+                        {task.status === "completed" &&
+                          !task.feedback?.isSatisfiedOnly &&
+                          !task.feedback?.rating && (
+                            <>
+                              {/* ✅ Satisfied Button */}
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleMarkSatisfied(task._id)}
+                                icon={ThumbsUp}
+                                className="flex-1 bg-green-600 hover:bg-green-700"
+                              >
+                                Satisfied
+                              </Button>
+
+                              {/* Feedback Button */}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenFeedbackModal(task)}
+                                icon={Star}
+                                className="flex-1 border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                              ></Button>
+                            </>
+                          )}
                       </div>
                     </div>
                   </div>
