@@ -389,6 +389,8 @@
       "editInfo": "Edit Info",
       "noClient": "No Client",
       "siteModal": {
+        "afterCreateSiteInfo": "After creating the site, you can add sections with reference images.",
+        "coverImageOptional": "Cover Image (optional)",
         "title": "Site Management",
         "addNewSite": "Add New Site",
         "editSite": "Edit Site",

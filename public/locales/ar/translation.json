@@ -2,7 +2,7 @@
   "common": {
     "worker": "عامل",
     "priority": "الأولوية",
-    "available":"متوفر",
+    "available": "متوفر",
     "back": "رجوع",
     "type": "النوع",
     "time": "الوقت",
@@ -437,6 +437,8 @@
       "editInfo": "تعديل المعلومات",
       "noClient": "بدون عميل",
       "siteModal": {
+        "afterCreateSiteInfo": "بعد إنشاء الموقع، يمكنك إضافة أقسام تحتوي على صور مرجعية.",
+        "coverImageOptional": "صورة الموقع (اختياري)",
         "title": "إدارة الموقع",
         "addNewSite": "إضافة موقع جديد",
         "editSite": "تعديل الموقع",
