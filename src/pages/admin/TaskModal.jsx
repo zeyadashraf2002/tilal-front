@@ -323,7 +323,7 @@ const TaskModal = ({ isOpen, onClose, task, onSuccess, preFillSite }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <MapPin className="w-4 h-4 inline mr-1" />
-            Site <span className="text-red-500">*</span>
+            {t("common.site")} <span className="text-red-500">*</span>
           </label>
 
           {/* Site Select */}
@@ -364,7 +364,8 @@ const TaskModal = ({ isOpen, onClose, task, onSuccess, preFillSite }) => {
           <div>
             <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Layers className="w-5 h-5 text-primary-600" />
-              Select Sections ({availableSections.length} available)
+              {t("admin.tasks.selectSections")} ({availableSections.length}{" "}
+              available)
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto p-2 border rounded-lg">
               {availableSections.map((section) => {
@@ -512,10 +513,7 @@ const TaskModal = ({ isOpen, onClose, task, onSuccess, preFillSite }) => {
             <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
             <div className="text-sm text-yellow-800">
               <p className="font-medium">Note:</p>
-              <p>
-                Workers will see reference images from ALL selected sections
-                during task execution.
-              </p>
+              <p>{t("admin.tasks.warning")}</p>
             </div>
           </div>
         )}

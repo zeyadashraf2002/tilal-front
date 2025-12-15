@@ -1,4 +1,4 @@
-// frontend/src/pages/admin/AdminTaskDetail.jsx -  WITH QTN SUPPORT
+// frontend/src/pages/admin/AdminTaskDetail.jsx - WITH QTN SUPPORT
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -34,7 +34,7 @@ const AdminTaskDetail = () => {
 
   const [referenceImages, setReferenceImages] = useState([]);
 
-  //  QTN-Based Previews Structure
+  // QTN-Based Previews Structure
   const [previewsByRef, setPreviewsByRef] = useState({});
 
   // Media Modal State
@@ -55,7 +55,7 @@ const AdminTaskDetail = () => {
       if (data.referenceImages?.length > 0) {
         setReferenceImages(data.referenceImages);
 
-        //  Initialize QTN-based preview structure
+        // Initialize QTN-based preview structure
         const initialPreviews = {};
 
         data.referenceImages.forEach((refImg, refIndex) => {
@@ -67,7 +67,7 @@ const AdminTaskDetail = () => {
           }
         });
 
-        //  Load existing uploaded images
+        // Load existing uploaded images
         if (data.images?.before) {
           let globalIndex = 0;
           data.referenceImages.forEach((refImg, refIndex) => {
@@ -112,13 +112,13 @@ const AdminTaskDetail = () => {
       }
     } catch (error) {
       console.error("Error fetching task:", error);
-      toast.error("Failed to load task details", {
+      toast.error(t("common.errorOccurred"), {
         duration: 5000,
       });
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchTask();
@@ -127,7 +127,7 @@ const AdminTaskDetail = () => {
   const handleSaveReview = async (status) => {
     try {
       if (!reviewComments && status === "rejected") {
-        toast.error("Please add comments for rejection", {
+        toast.error(t("admin.tasks.reviewCommentsRequired"), {
           duration: 5000,
         });
         return;
@@ -144,13 +144,13 @@ const AdminTaskDetail = () => {
       });
 
       setReviewStatus(status);
-      toast.success("Task ${status} successfully ", {
+      toast.success(t("admin.tasks.reviewSaved", { status }), {
         duration: 5000,
       });
       fetchTask();
     } catch (error) {
       console.error("Error saving review:", error);
-      toast.error("Failed to save review", {
+      toast.error(t("common.errorOccurred"), {
         duration: 5000,
       });
     } finally {
@@ -171,7 +171,7 @@ const AdminTaskDetail = () => {
       fetchTask();
     } catch (error) {
       console.error("Error toggling image visibility:", error);
-      toast.error("Failed to update image visibility", {
+      toast.error(t("common.errorOccurred"), {
         duration: 5000,
       });
     }
@@ -190,7 +190,7 @@ const AdminTaskDetail = () => {
   if (!task) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Task not found</p>
+        <p className="text-gray-500">{t("admin.tasks.taskNotFound")}</p>
       </div>
     );
   }
@@ -198,7 +198,7 @@ const AdminTaskDetail = () => {
   return (
     <div className="space-y-6">
       <Button variant="secondary" icon={ArrowLeft} onClick={() => navigate(-1)}>
-        Back
+        {t("common.back")}
       </Button>
 
       {/* Header */}
@@ -232,7 +232,7 @@ const AdminTaskDetail = () => {
                   : "bg-gray-100 text-gray-800"
               }`}
             >
-              Review: {reviewStatus}
+              {t("admin.tasks.review")}: {t(`status.${reviewStatus}`)}
             </span>
           </div>
         </div>
@@ -243,7 +243,7 @@ const AdminTaskDetail = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Client Feedback Section */}
           {task.feedback && (
-            <Card title=" Client Feedback">
+            <Card title={t("admin.tasks.clientFeedback")}>
               <div
                 className={`rounded-xl p-5 border-2 ${
                   task.feedback.isSatisfiedOnly
@@ -261,13 +261,13 @@ const AdminTaskDetail = () => {
                       <div className="flex items-center gap-2 bg-green-100 px-4 py-2 rounded-full">
                         <ThumbsUp className="w-5 h-5 text-green-600" />
                         <span className="font-bold text-green-800">
-                          Client is Satisfied ✓
+                          {t("admin.tasks.clientSatisfied")}
                         </span>
                       </div>
                     ) : (
                       <>
                         <span className="text-sm font-medium text-gray-700">
-                          Rating:
+                          {t("admin.tasks.rating")}:
                         </span>
                         <div className="flex gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
@@ -299,7 +299,7 @@ const AdminTaskDetail = () => {
                       <MessageSquare className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-700 mb-1">
-                          Client's Comment:
+                          {t("admin.tasks.clientComment")}:
                         </p>
                         <p className="text-gray-900 leading-relaxed">
                           "{task.feedback.comment}"
@@ -312,7 +312,7 @@ const AdminTaskDetail = () => {
                 {task.feedback.image && (
                   <div className="mt-4">
                     <p className="text-sm font-medium text-gray-700 mb-2">
-                      Evidence Photo:
+                      {t("admin.tasks.evidencePhoto")}:
                     </p>
                     <img
                       src={task.feedback.image}
@@ -328,7 +328,7 @@ const AdminTaskDetail = () => {
 
           {/* Site Info */}
           {task.site && (
-            <Card title=" Site Information">
+            <Card title={t("admin.tasks.siteInformation")}>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   {task.site.coverImage?.url ? (
@@ -347,10 +347,11 @@ const AdminTaskDetail = () => {
                       {task.site.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Type: {task.site.siteType}
+                      {t("common.type")}: {task.site.siteType}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Area: {task.site.totalArea}m²
+                      {t("admin.siteSections.totalArea")}: {task.site.totalArea}{" "}
+                      m²
                     </p>
                   </div>
                 </div>
@@ -360,18 +361,18 @@ const AdminTaskDetail = () => {
 
           {/* GPS Tracking */}
           {(task.startLocation || task.endLocation) && (
-            <Card title="🌍 GPS Tracking">
+            <Card title={t("admin.tasks.gpsTracking")}>
               <div className="space-y-4">
                 {task.startLocation && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Navigation className="w-5 h-5 text-blue-600" />
                       <h4 className="font-semibold text-blue-900">
-                        Start Location
+                        {t("admin.tasks.startLocation")}
                       </h4>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">
-                      Time:{" "}
+                      {t("common.time")}:{" "}
                       {new Date(task.startLocation.timestamp).toLocaleString()}
                     </p>
                     <a
@@ -380,7 +381,7 @@ const AdminTaskDetail = () => {
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
                     >
-                      📍 View on Google Maps
+                      📍 {t("common.viewOnGoogleMaps")}
                     </a>
                   </div>
                 )}
@@ -390,11 +391,11 @@ const AdminTaskDetail = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <Navigation className="w-5 h-5 text-green-600" />
                       <h4 className="font-semibold text-green-900">
-                        End Location
+                        {t("admin.tasks.endLocation")}
                       </h4>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">
-                      Time:{" "}
+                      {t("common.time")}:{" "}
                       {new Date(task.endLocation.timestamp).toLocaleString()}
                     </p>
                     <a
@@ -403,7 +404,7 @@ const AdminTaskDetail = () => {
                       rel="noopener noreferrer"
                       className="text-green-600 hover:text-green-800 underline text-sm font-medium"
                     >
-                      📍 View on Google Maps
+                      📍 {t("common.viewOnGoogleMaps")}
                     </a>
                   </div>
                 )}
@@ -411,15 +412,15 @@ const AdminTaskDetail = () => {
             </Card>
           )}
 
-          {/*  QTN-Based Work Documentation */}
+          {/* QTN-Based Work Documentation */}
           {referenceImages.length > 0 && (
-            <Card title="📸 Work Documentation">
+            <Card title={t("admin.tasks.workDocumentation")}>
               <div className="space-y-6">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-sm text-blue-800 font-medium">
-                    Total Required Photos:{" "}
+                    {t("admin.tasks.totalRequiredPhotos")}:{" "}
                     {referenceImages.reduce((sum, r) => sum + (r.qtn || 1), 0)}{" "}
-                    × Before + After
+                    × {t("admin.tasks.beforeAfter")}
                   </p>
                 </div>
 
@@ -438,11 +439,12 @@ const AdminTaskDetail = () => {
                           #{refIndex + 1}
                         </span>
                         <h4 className="font-semibold text-gray-900">
-                          {refMedia.caption || `Work Area ${refIndex + 1}`}
+                          {refMedia.caption ||
+                            t("admin.tasks.workArea", { index: refIndex + 1 })}
                         </h4>
                         {qtn > 1 && (
                           <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                            {qtn} Locations
+                            {t("admin.tasks.locationsCount", { count: qtn })}
                           </span>
                         )}
                       </div>
@@ -450,14 +452,15 @@ const AdminTaskDetail = () => {
                       {/* Reference Media */}
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Reference {isRefVideo ? "Video" : "Image"}
+                          {t("admin.tasks.reference")}{" "}
+                          {isRefVideo ? t("common.video") : t("common.image")}
                         </label>
                         <div
                           className="relative h-48 bg-gray-100 rounded-lg border-2 border-primary-300 overflow-hidden cursor-pointer hover:opacity-90"
                           onClick={() =>
                             handleMediaClick(
                               refMedia,
-                              `Reference ${refIndex + 1}`
+                              `${t("admin.tasks.reference")} ${refIndex + 1}`
                             )
                           }
                         >
@@ -475,14 +478,16 @@ const AdminTaskDetail = () => {
                           ) : (
                             <img
                               src={refMedia.url}
-                              alt={`Reference ${refIndex + 1}`}
+                              alt={`${t("admin.tasks.reference")} ${
+                                refIndex + 1
+                              }`}
                               className="w-full h-full object-cover"
                             />
                           )}
                         </div>
                       </div>
 
-                      {/*  QTN-Based Upload Grid */}
+                      {/* QTN-Based Upload Grid */}
                       <div className="space-y-4">
                         {Array.from({ length: qtn }).map((_, qtnIdx) => {
                           const beforeMedia =
@@ -501,7 +506,7 @@ const AdminTaskDetail = () => {
                             >
                               <div className="flex items-center gap-2 mb-3">
                                 <span className="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded">
-                                  Location #{qtnIdx + 1}
+                                  {t("admin.tasks.location")} #{qtnIdx + 1}
                                 </span>
                               </div>
 
@@ -509,7 +514,7 @@ const AdminTaskDetail = () => {
                                 {/* Before */}
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 mb-2">
-                                    Before Work
+                                    {t("admin.tasks.beforeWork")}
                                   </label>
                                   {beforeMedia ? (
                                     <div
@@ -517,7 +522,9 @@ const AdminTaskDetail = () => {
                                       onClick={() =>
                                         handleMediaClick(
                                           beforeMedia,
-                                          `Before ${refIndex + 1}-${qtnIdx + 1}`
+                                          `${t("admin.tasks.before")} ${
+                                            refIndex + 1
+                                          }-${qtnIdx + 1}`
                                         )
                                       }
                                     >
@@ -535,18 +542,20 @@ const AdminTaskDetail = () => {
                                       ) : (
                                         <img
                                           src={beforeMedia.url}
-                                          alt={`Before ${refIndex}-${qtnIdx}`}
+                                          alt={`${t(
+                                            "admin.tasks.before"
+                                          )} ${refIndex}-${qtnIdx}`}
                                           className="w-full h-full object-cover"
                                         />
                                       )}
                                       <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                                        Uploaded
+                                        {t("admin.tasks.uploaded")}
                                       </div>
                                     </div>
                                   ) : (
                                     <div className="border-2 border-dashed border-gray-300 rounded-lg h-32 flex items-center justify-center">
                                       <span className="text-xs text-gray-400">
-                                        Not uploaded
+                                        {t("admin.tasks.notUploaded")}
                                       </span>
                                     </div>
                                   )}
@@ -555,7 +564,7 @@ const AdminTaskDetail = () => {
                                 {/* After */}
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 mb-2">
-                                    After Work
+                                    {t("admin.tasks.afterWork")}
                                   </label>
                                   {afterMedia ? (
                                     <div className="relative group">
@@ -564,9 +573,9 @@ const AdminTaskDetail = () => {
                                         onClick={() =>
                                           handleMediaClick(
                                             afterMedia,
-                                            `After ${refIndex + 1}-${
-                                              qtnIdx + 1
-                                            }`
+                                            `${t("admin.tasks.after")} ${
+                                              refIndex + 1
+                                            }-${qtnIdx + 1}`
                                           )
                                         }
                                       >
@@ -584,12 +593,14 @@ const AdminTaskDetail = () => {
                                         ) : (
                                           <img
                                             src={afterMedia.url}
-                                            alt={`After ${refIndex}-${qtnIdx}`}
+                                            alt={`${t(
+                                              "admin.tasks.after"
+                                            )} ${refIndex}-${qtnIdx}`}
                                             className="w-full h-full object-cover"
                                           />
                                         )}
                                         <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                                          Uploaded
+                                          {t("admin.tasks.uploaded")}
                                         </div>
                                       </div>
 
@@ -610,7 +621,8 @@ const AdminTaskDetail = () => {
                                             className="w-4 h-4 text-green-600"
                                           />
                                           <span className="font-medium text-gray-700">
-                                            👁️ Visible to Client
+                                            👁️{" "}
+                                            {t("admin.tasks.visibleToClient")}
                                           </span>
                                         </label>
                                       </div>
@@ -618,7 +630,7 @@ const AdminTaskDetail = () => {
                                   ) : (
                                     <div className="border-2 border-dashed border-gray-300 rounded-lg h-32 flex items-center justify-center">
                                       <span className="text-xs text-gray-400">
-                                        Not uploaded
+                                        {t("admin.tasks.notUploaded")}
                                       </span>
                                     </div>
                                   )}
@@ -636,7 +648,7 @@ const AdminTaskDetail = () => {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-blue-800">
-                      Completion:{" "}
+                      {t("admin.tasks.completion")}:{" "}
                       {Object.values(previewsByRef).reduce(
                         (sum, ref) =>
                           sum +
@@ -650,7 +662,7 @@ const AdminTaskDetail = () => {
                         (sum, r) => sum + (r.qtn || 1),
                         0
                       )}{" "}
-                      Complete
+                      {t("admin.tasks.complete")}
                     </span>
                     {Object.values(previewsByRef).every((ref) =>
                       Object.values(ref).every((qtn) => qtn.before && qtn.after)
@@ -662,7 +674,7 @@ const AdminTaskDetail = () => {
           )}
 
           {/* Admin Review */}
-          <Card title="️ Admin Review & Approval">
+          <Card title={t("admin.tasks.adminReview")}>
             <div className="space-y-4">
               <div
                 className={`p-4 rounded-lg border-2 ${
@@ -674,7 +686,7 @@ const AdminTaskDetail = () => {
                 }`}
               >
                 <p className="text-sm font-semibold mb-1">
-                  Current Review Status:
+                  {t("admin.tasks.currentReviewStatus")}:
                 </p>
                 <p
                   className={`text-lg font-bold ${
@@ -685,20 +697,20 @@ const AdminTaskDetail = () => {
                       : "text-yellow-700"
                   }`}
                 >
-                  {reviewStatus.toUpperCase()}
+                  {t(`status.${reviewStatus}`).toUpperCase()}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Review Comments
+                  {t("admin.tasks.reviewComments")}
                 </label>
                 <textarea
                   value={reviewComments}
                   onChange={(e) => setReviewComments(e.target.value)}
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  placeholder="Add your review comments here..."
+                  placeholder={t("admin.tasks.reviewCommentsPlaceholder")}
                 />
               </div>
 
@@ -710,7 +722,7 @@ const AdminTaskDetail = () => {
                   icon={CheckCircle}
                   className="w-full"
                 >
-                  {saving ? "..." : " Approve"}
+                  {saving ? t("common.saving") : t("common.approve")}
                 </Button>
 
                 <Button
@@ -719,7 +731,7 @@ const AdminTaskDetail = () => {
                   variant="secondary"
                   className="w-full"
                 >
-                  {saving ? "..." : " Pending"}
+                  {saving ? t("common.saving") : t("status.pending")}
                 </Button>
 
                 <Button
@@ -729,7 +741,7 @@ const AdminTaskDetail = () => {
                   icon={XCircle}
                   className="w-full"
                 >
-                  {saving ? "..." : " Reject"}
+                  {saving ? t("common.saving") : t("common.reject")}
                 </Button>
               </div>
             </div>
@@ -739,27 +751,29 @@ const AdminTaskDetail = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Task Info */}
-          <Card title="ℹ️ Task Information">
+          <Card title={t("admin.tasks.taskInformation")}>
             <div className="space-y-3 text-sm">
               <div>
-                <p className="text-gray-500">Client</p>
+                <p className="text-gray-500">{t("common.client")}</p>
                 <p className="font-semibold">{task.client?.name}</p>
               </div>
               <div>
-                <p className="text-gray-500">Worker</p>
+                <p className="text-gray-500">{t("common.worker")}</p>
                 <p className="font-semibold">
-                  {task.worker?.name || "Unassigned"}
+                  {task.worker?.name || t("common.unassigned")}
                 </p>
               </div>
               <div>
-                <p className="text-gray-500">Scheduled Date</p>
+                <p className="text-gray-500">
+                  {t("admin.tasks.scheduledDate")}
+                </p>
                 <p className="font-semibold">
                   {new Date(task.scheduledDate).toLocaleDateString()}
                 </p>
               </div>
               {task.startedAt && (
                 <div>
-                  <p className="text-gray-500">Started At</p>
+                  <p className="text-gray-500">{t("admin.tasks.startedAt")}</p>
                   <p className="font-semibold">
                     {new Date(task.startedAt).toLocaleString()}
                   </p>
@@ -767,7 +781,9 @@ const AdminTaskDetail = () => {
               )}
               {task.completedAt && (
                 <div>
-                  <p className="text-gray-500">Completed At</p>
+                  <p className="text-gray-500">
+                    {t("admin.tasks.completedAt")}
+                  </p>
                   <p className="font-semibold">
                     {new Date(task.completedAt).toLocaleString()}
                   </p>
@@ -778,17 +794,17 @@ const AdminTaskDetail = () => {
 
           {/* Review History */}
           {task.adminReview?.reviewedAt && (
-            <Card title=" Review History">
+            <Card title={t("admin.tasks.reviewHistory")}>
               <div className="space-y-2 text-sm">
                 <div>
-                  <p className="text-gray-500">Reviewed At</p>
+                  <p className="text-gray-500">{t("admin.tasks.reviewedAt")}</p>
                   <p className="font-semibold">
                     {new Date(task.adminReview.reviewedAt).toLocaleString()}
                   </p>
                 </div>
                 {task.adminReview.comments && (
                   <div>
-                    <p className="text-gray-500">Comments</p>
+                    <p className="text-gray-500">{t("admin.tasks.comments")}</p>
                     <p className="text-gray-700 bg-gray-50 p-2 rounded mt-1">
                       {task.adminReview.comments}
                     </p>

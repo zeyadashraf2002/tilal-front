@@ -116,7 +116,8 @@ const TaskDetail = () => {
         if (taskData.images?.before?.[globalBeforeIdx]) {
           previews[refIdx][qtnIdx].before = {
             url: taskData.images.before[globalBeforeIdx].url,
-            mediaType: taskData.images.before[globalBeforeIdx].mediaType || "image",
+            mediaType:
+              taskData.images.before[globalBeforeIdx].mediaType || "image",
             existing: true,
           };
           globalBeforeIdx++;
@@ -124,7 +125,8 @@ const TaskDetail = () => {
         if (taskData.images?.after?.[globalAfterIdx]) {
           previews[refIdx][qtnIdx].after = {
             url: taskData.images.after[globalAfterIdx].url,
-            mediaType: taskData.images.after[globalAfterIdx].mediaType || "image",
+            mediaType:
+              taskData.images.after[globalAfterIdx].mediaType || "image",
             existing: true,
           };
           globalAfterIdx++;
@@ -281,7 +283,9 @@ const TaskDetail = () => {
       initializeQTNStructure(res.data.data);
       toast.success("Materials confirmed successfully!");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to confirm materials");
+      toast.error(
+        error.response?.data?.message || "Failed to confirm materials"
+      );
     }
   };
 
@@ -335,7 +339,9 @@ const TaskDetail = () => {
           }
           return;
         } else {
-          toast.error("An error occurred while getting location. Please try again.");
+          toast.error(
+            "An error occurred while getting location. Please try again."
+          );
           return;
         }
       }
@@ -457,7 +463,11 @@ const TaskDetail = () => {
         onClose={() => setShowMediaModal(false)}
         mediaUrl={selectedMedia}
         mediaType={selectedMediaType}
-        title={selectedMediaType === "video" ? "Video Preview" : "Image Preview"}
+        title={t(
+          `worker.mediaModal.${
+            selectedMediaType === "video" ? "videoTitle" : "imageTitle"
+          }`
+        )}
       />
 
       <Button variant="secondary" icon={ArrowLeft} onClick={() => navigate(-1)}>
@@ -481,11 +491,11 @@ const TaskDetail = () => {
             <p className="text-gray-600 mb-4">{task.description}</p>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-500">Client:</span>{" "}
+                <span className="text-gray-500">{t("common.client")}:</span>{" "}
                 <strong>{task.client?.name}</strong>
               </div>
               <div>
-                <span className="text-gray-500">Priority:</span>{" "}
+                <span className="text-gray-500">{t("common.priority")}:</span>{" "}
                 <strong className="text-orange-600">
                   {t(`priority.${task.priority}`)}
                 </strong>
@@ -495,20 +505,21 @@ const TaskDetail = () => {
 
           {/* Reference Guide with NEW LAYOUT */}
           {referenceImages.length > 0 && (
-            <Card title="📸 Work Reference Guide">
+            <Card title={t("worker.referenceGuideTitle")}>
               {/* Progress Header */}
               <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl p-6 mb-8">
                 <div className="flex items-center gap-4">
                   <AlertCircle className="w-10 h-10 text-indigo-600" />
                   <div>
                     <p className="text-xl font-bold text-indigo-900">
-                      Total Required Locations
+                      {t("worker.totalRequiredLocations")}
                     </p>
                     <p className="text-3xl font-extrabold text-indigo-700">
                       {totalLocations}
                     </p>
                     <p className="text-sm text-indigo-600">
-                      Before: {beforeCount}/{totalLocations} • After:{" "}
+                      {t("worker.progressBefore")}: {beforeCount}/
+                      {totalLocations} • {t("worker.progressAfter")}:{" "}
                       {afterCount}/{totalLocations}
                     </p>
                   </div>
@@ -522,7 +533,7 @@ const TaskDetail = () => {
                 {referenceImages.map((ref, refIdx) => {
                   const qtn = ref.qtn || 1;
                   const refMediaType = ref.mediaType || "image";
-                  
+
                   return (
                     <div
                       key={refIdx}
@@ -532,16 +543,16 @@ const TaskDetail = () => {
                       <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-5 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <span className="text-3xl font-bold">
-                            Reference #{refIdx + 1}
+                            {t("worker.reference")} #{refIdx + 1}
                           </span>
                           {qtn > 1 && (
                             <span className="bg-orange-500 px-5 py-2 rounded-full text-lg font-bold">
-                              {qtn} Locations
+                              {qtn} {t("worker.locations")}
                             </span>
                           )}
                         </div>
                         <span className="text-lg opacity-90">
-                          {ref.caption || "Work Area"}
+                          {ref.caption || t("worker.workArea")}
                         </span>
                       </div>
 
@@ -550,9 +561,12 @@ const TaskDetail = () => {
                         {/* Reference Media - Left Column */}
                         <div className="lg:col-span-1 flex flex-col">
                           <h4 className="text-xl font-bold text-center mb-4 text-gray-800">
-                            Reference {refMediaType === "video" ? "Video" : "Image"}
+                            {t("worker.reference")}{" "}
+                            {refMediaType === "video"
+                              ? t("worker.video")
+                              : t("worker.image")}
                           </h4>
-                          
+
                           {refMediaType === "video" ? (
                             <div className="relative group">
                               <video
@@ -566,7 +580,7 @@ const TaskDetail = () => {
                               </div>
                               <div className="absolute top-3 left-3 bg-purple-600 text-white px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1">
                                 <Video className="w-4 h-4" />
-                                <span>VIDEO</span>
+                                <span>{t("worker.video").toUpperCase()}</span>
                               </div>
                             </div>
                           ) : (
@@ -579,26 +593,37 @@ const TaskDetail = () => {
                               />
                               <div className="absolute top-3 left-3 bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1">
                                 <ImageIcon className="w-4 h-4" />
-                                <span>IMAGE</span>
+                                <span>{t("worker.image").toUpperCase()}</span>
                               </div>
                             </div>
                           )}
-                          
+
                           <p className="text-center mt-4 text-gray-600 font-medium">
-                            Click to enlarge
+                            {t("worker.clickToEnlarge")}
                           </p>
                         </div>
 
                         {/* QTN Locations - Right 2 Columns */}
                         <div className="lg:col-span-2 space-y-8">
                           {Array.from({ length: qtn }, (_, locIdx) => {
-                            const beforeKey = getUploadKey("before", refIdx, locIdx);
-                            const afterKey = getUploadKey("after", refIdx, locIdx);
-                            const isBeforeUploading = uploadingImages[beforeKey];
+                            const beforeKey = getUploadKey(
+                              "before",
+                              refIdx,
+                              locIdx
+                            );
+                            const afterKey = getUploadKey(
+                              "after",
+                              refIdx,
+                              locIdx
+                            );
+                            const isBeforeUploading =
+                              uploadingImages[beforeKey];
                             const isAfterUploading = uploadingImages[afterKey];
 
-                            const beforeData = previewsByRef[refIdx]?.[locIdx]?.before;
-                            const afterData = previewsByRef[refIdx]?.[locIdx]?.after;
+                            const beforeData =
+                              previewsByRef[refIdx]?.[locIdx]?.before;
+                            const afterData =
+                              previewsByRef[refIdx]?.[locIdx]?.after;
 
                             return (
                               <div
@@ -607,7 +632,7 @@ const TaskDetail = () => {
                               >
                                 <h4 className="text-lg font-bold mb-4 text-center flex items-center justify-center gap-3">
                                   <span className="bg-indigo-600 text-white px-4 py-2 rounded-lg">
-                                    Location #{locIdx + 1}
+                                    {t("worker.location")} #{locIdx + 1}
                                   </span>
                                 </h4>
 
@@ -615,7 +640,7 @@ const TaskDetail = () => {
                                   {/* Before */}
                                   <div>
                                     <label className="block text-center text-md font-semibold text-gray-700 mb-3">
-                                      Before Work
+                                      {t("worker.beforeWork")}
                                     </label>
                                     {isBeforeUploading ? (
                                       <SkeletonLoader />
@@ -626,7 +651,12 @@ const TaskDetail = () => {
                                             <video
                                               src={beforeData.url}
                                               className="w-full h-56 object-cover rounded-lg border-4 border-blue-400 shadow-md cursor-pointer hover:opacity-90 transition"
-                                              onClick={() => openMediaModal(beforeData.url, "video")}
+                                              onClick={() =>
+                                                openMediaModal(
+                                                  beforeData.url,
+                                                  "video"
+                                                )
+                                              }
                                               preload="metadata"
                                             />
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none rounded-lg">
@@ -641,37 +671,46 @@ const TaskDetail = () => {
                                             src={beforeData.url}
                                             alt="Before"
                                             className="w-full h-56 object-cover rounded-lg border-4 border-blue-400 shadow-md cursor-pointer hover:opacity-90 transition"
-                                            onClick={() => openMediaModal(beforeData.url, "image")}
+                                            onClick={() =>
+                                              openMediaModal(
+                                                beforeData.url,
+                                                "image"
+                                              )
+                                            }
                                           />
                                         )}
-                                        
+
                                         {beforeData.existing && (
                                           <div className="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">
-                                            Uploaded
+                                            {t("worker.uploaded")}
                                           </div>
                                         )}
-                                        
+
                                         {/* Delete Button */}
-                                        {task.status !== "completed" && beforeData.existing && (
-                                          <DeleteImageButton
-                                            imageData={{
-                                              cloudinaryId: task.images.before.find(
-                                                (img) => img.url === beforeData.url
-                                              )?.cloudinaryId,
-                                              mediaType: beforeData.mediaType,
-                                              _id: task.images.before.find(
-                                                (img) => img.url === beforeData.url
-                                              )?._id,
-                                            }}
-                                            entityType="task"
-                                            entityId={task._id}
-                                            imageType="before"
-                                            onSuccess={refreshTaskData}
-                                            position="top-left"
-                                            size="md"
-                                            showOnHover={true}
-                                          />
-                                        )}
+                                        {task.status !== "completed" &&
+                                          beforeData.existing && (
+                                            <DeleteImageButton
+                                              imageData={{
+                                                cloudinaryId:
+                                                  task.images.before.find(
+                                                    (img) =>
+                                                      img.url === beforeData.url
+                                                  )?.cloudinaryId,
+                                                mediaType: beforeData.mediaType,
+                                                _id: task.images.before.find(
+                                                  (img) =>
+                                                    img.url === beforeData.url
+                                                )?._id,
+                                              }}
+                                              entityType="task"
+                                              entityId={task._id}
+                                              imageType="before"
+                                              onSuccess={refreshTaskData}
+                                              position="top-left"
+                                              size="md"
+                                              showOnHover={true}
+                                            />
+                                          )}
                                       </div>
                                     ) : (
                                       <label className="block cursor-pointer">
@@ -695,10 +734,10 @@ const TaskDetail = () => {
                                             <Video className="w-10 h-10 text-blue-500" />
                                           </div>
                                           <span className="text-blue-600 font-medium">
-                                            Upload Before
+                                            {t("worker.uploadBefore")}
                                           </span>
                                           <span className="text-xs text-gray-500 mt-1">
-                                            Image or Video
+                                            {t("worker.imageOrVideo")}
                                           </span>
                                         </div>
                                       </label>
@@ -708,7 +747,7 @@ const TaskDetail = () => {
                                   {/* After */}
                                   <div>
                                     <label className="block text-center text-md font-semibold text-gray-700 mb-3">
-                                      After Work
+                                      {t("worker.afterWork")}
                                     </label>
                                     {isAfterUploading ? (
                                       <SkeletonLoader />
@@ -719,7 +758,12 @@ const TaskDetail = () => {
                                             <video
                                               src={afterData.url}
                                               className="w-full h-56 object-cover rounded-lg border-4 border-green-400 shadow-md cursor-pointer hover:opacity-90 transition"
-                                              onClick={() => openMediaModal(afterData.url, "video")}
+                                              onClick={() =>
+                                                openMediaModal(
+                                                  afterData.url,
+                                                  "video"
+                                                )
+                                              }
                                               preload="metadata"
                                             />
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none rounded-lg">
@@ -734,37 +778,46 @@ const TaskDetail = () => {
                                             src={afterData.url}
                                             alt="After"
                                             className="w-full h-56 object-cover rounded-lg border-4 border-green-400 shadow-md cursor-pointer hover:opacity-90 transition"
-                                            onClick={() => openMediaModal(afterData.url, "image")}
+                                            onClick={() =>
+                                              openMediaModal(
+                                                afterData.url,
+                                                "image"
+                                              )
+                                            }
                                           />
                                         )}
-                                        
+
                                         {afterData.existing && (
                                           <div className="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">
-                                            Uploaded
+                                            {t("worker.uploaded")}
                                           </div>
                                         )}
-                                        
+
                                         {/* Delete Button */}
-                                        {task.status !== "completed" && afterData.existing && (
-                                          <DeleteImageButton
-                                            imageData={{
-                                              cloudinaryId: task.images.after.find(
-                                                (img) => img.url === afterData.url
-                                              )?.cloudinaryId,
-                                              mediaType: afterData.mediaType,
-                                              _id: task.images.after.find(
-                                                (img) => img.url === afterData.url
-                                              )?._id,
-                                            }}
-                                            entityType="task"
-                                            entityId={task._id}
-                                            imageType="after"
-                                            onSuccess={refreshTaskData}
-                                            position="top-left"
-                                            size="md"
-                                            showOnHover={true}
-                                          />
-                                        )}
+                                        {task.status !== "completed" &&
+                                          afterData.existing && (
+                                            <DeleteImageButton
+                                              imageData={{
+                                                cloudinaryId:
+                                                  task.images.after.find(
+                                                    (img) =>
+                                                      img.url === afterData.url
+                                                  )?.cloudinaryId,
+                                                mediaType: afterData.mediaType,
+                                                _id: task.images.after.find(
+                                                  (img) =>
+                                                    img.url === afterData.url
+                                                )?._id,
+                                              }}
+                                              entityType="task"
+                                              entityId={task._id}
+                                              imageType="after"
+                                              onSuccess={refreshTaskData}
+                                              position="top-left"
+                                              size="md"
+                                              showOnHover={true}
+                                            />
+                                          )}
                                       </div>
                                     ) : (
                                       <label className="block cursor-pointer">
@@ -788,10 +841,10 @@ const TaskDetail = () => {
                                             <Video className="w-10 h-10 text-green-500" />
                                           </div>
                                           <span className="text-green-600 font-medium">
-                                            Upload After
+                                            {t("worker.uploadAfter")}
                                           </span>
                                           <span className="text-xs text-gray-500 mt-1">
-                                            Image or Video
+                                            {t("worker.imageOrVideo")}
                                           </span>
                                         </div>
                                       </label>
@@ -808,7 +861,8 @@ const TaskDetail = () => {
                                         : "text-gray-400"
                                     }
                                   >
-                                    {beforeData ? "✓" : "○"} Before
+                                    {beforeData ? "✓" : "○"}{" "}
+                                    {t("worker.before")}
                                   </span>
                                   <span
                                     className={
@@ -817,7 +871,7 @@ const TaskDetail = () => {
                                         : "text-gray-400"
                                     }
                                   >
-                                    {afterData ? "✓" : "○"} After
+                                    {afterData ? "✓" : "○"} {t("worker.after")}
                                   </span>
                                 </div>
                               </div>
@@ -833,19 +887,19 @@ const TaskDetail = () => {
               {/* Final Progress */}
               <div className="mt-10 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-8 text-center">
                 <p className="text-3xl font-bold text-green-800">
-                  {beforeCount + afterCount} / {totalLocations * 2} Photos
-                  Completed
+                  {beforeCount + afterCount} / {totalLocations * 2}{" "}
+                  {t("worker.photosCompleted")}
                 </p>
                 {allPhotosComplete && (
                   <div className="mt-4 flex items-center justify-center gap-3 text-2xl text-green-600">
                     <CheckCircle className="w-12 h-12" />
-                    <span>All photos uploaded successfully!</span>
+                    <span>{t("worker.allPhotosUploaded")}</span>
                   </div>
                 )}
                 {hasAnyUploading && (
                   <div className="mt-4 flex items-center justify-center gap-3 text-lg text-blue-600">
                     <Loader2 className="w-6 h-6 animate-spin" />
-                    <span>Uploading images...</span>
+                    <span>{t("worker.uploadingImages")}...</span>
                   </div>
                 )}
               </div>
@@ -856,11 +910,11 @@ const TaskDetail = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Materials Card */}
-          <Card title="Materials Used">
+          <Card title={t("worker.uploadingImages")}>
             <div className="space-y-4">
               {selectedMaterials.length === 0 ? (
                 <p className="text-center text-gray-500 py-6">
-                  No materials added
+                  {t("worker.noMaterialsAdded")}
                 </p>
               ) : (
                 selectedMaterials.map((m, idx) => (
@@ -915,7 +969,8 @@ const TaskDetail = () => {
                       onClick={() => setShowAddMaterial(true)}
                       className="w-full py-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50 transition"
                     >
-                      <Plus className="w-5 h-5" /> Add Material
+                      <Plus className="w-5 h-5" />
+                      {t("worker.addMaterial")}
                     </button>
                   ) : (
                     <div>
@@ -928,10 +983,11 @@ const TaskDetail = () => {
                         }}
                         className="w-full p-3 border rounded mb-2"
                       >
-                        <option value="">Select material...</option>
+                        <option value="">{t("worker.selectMaterial")}</option>
                         {availableInventory.map((item) => (
                           <option key={item._id} value={item._id}>
-                            {item.name} ({item.quantity.current} available)
+                            {item.name} ({item.quantity.current}{" "}
+                            {t("common.available")})
                           </option>
                         ))}
                       </select>
@@ -939,7 +995,7 @@ const TaskDetail = () => {
                         onClick={() => setShowAddMaterial(false)}
                         className="text-sm text-gray-500 hover:text-gray-700"
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </button>
                     </div>
                   )}
@@ -950,7 +1006,8 @@ const TaskDetail = () => {
                       variant="success"
                       className="w-full mt-4"
                     >
-                      Confirm All Materials ({selectedMaterials.length})
+                      {t("worker.confirmAllMaterials")} (
+                      {selectedMaterials.length})
                     </Button>
                   )}
                 </>
@@ -960,20 +1017,20 @@ const TaskDetail = () => {
 
           {/* Task Action Buttons */}
           {task.status === "assigned" && (
-            <Card title="Start Task">
+            <Card title={t("worker.startTask")}>
               <Button
                 variant="primary"
                 className="w-full py-6 text-xl font-bold"
                 onClick={handleStartTask}
               >
                 <Clock className="w-6 h-6 inline mr-2" />
-                Start Task
+                {t("worker.startTask")}
               </Button>
             </Card>
           )}
 
           {task.status === "in-progress" && (
-            <Card title="Complete Task">
+            <Card title={t("worker.completeTask")}>
               <Button
                 variant="success"
                 className="w-full py-6 text-2xl font-bold"
@@ -987,7 +1044,7 @@ const TaskDetail = () => {
 
               {!allPhotosComplete && (
                 <p className="text-red-600 text-center mt-4 font-bold">
-                  Complete all {totalLocations} locations first
+                  {t("worker.completeAllLocations", { count: totalLocations })}
                 </p>
               )}
 

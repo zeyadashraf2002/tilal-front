@@ -36,14 +36,14 @@ const SiteSectionsPage = () => {
       setSite(response.data.data);
     } catch (error) {
       console.error("Error fetching site:", error);
-      toast.error("Failed to load site details", {
+      toast.error(t("common.errorOccurred"), {
         duration: 5000,
       });
       navigate("/admin/sites");
     } finally {
       setLoading(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate, t]);
 
   const fetchClients = useCallback(async () => {
     try {
@@ -54,26 +54,22 @@ const SiteSectionsPage = () => {
     }
   }, []);
 
-  //  جلب آخر 2 tasks rejected على الـ site
   const fetchRejectedTasks = useCallback(async () => {
     try {
       const response = await tasksAPI.getTasks({ site: id });
       const tasks = response.data.data || [];
 
-      // فلترة الـ tasks اللي عليها rejected أو عندها comments
       const rejected = tasks
         .filter(
           (task) =>
             task.adminReview?.status === "rejected" &&
             task.adminReview?.comments
         )
-        // ترتيب حسب التاريخ (الأحدث أولاً)
         .sort((a, b) => {
           const dateA = new Date(a.updatedAt || a.createdAt);
           const dateB = new Date(b.updatedAt || b.createdAt);
           return dateB - dateA;
         })
-        // أخذ أول 2 فقط
         .slice(0, 2);
 
       setRejectedTasks(rejected);
@@ -170,7 +166,7 @@ const SiteSectionsPage = () => {
             className="absolute top-4 right-4 bg-white text-gray-700 px-4 py-2 rounded-lg shadow-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
           >
             <Edit className="w-4 h-4" />
-            Edit Site
+            {t("common.edit")} {t("common.site")}
           </button>
         </div>
 
@@ -182,8 +178,8 @@ const SiteSectionsPage = () => {
                 {site.name}
               </h1>
               <p className="text-gray-600 flex items-center gap-2">
-                <span className="font-medium">Client:</span>
-                {site.client?.name || "Not Found"}
+                <span className="font-medium">{t("common.client")}:</span>
+                {site.client?.name || t("common.notFound")}
               </p>
             </div>
             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
@@ -202,7 +198,7 @@ const SiteSectionsPage = () => {
                 {t("admin.siteSections.totalArea")}
               </p>
               <p className="text-xl font-bold text-gray-900">
-                {site.totalArea || 0}m²
+                {site.totalArea || 0} m²
               </p>
             </div>
             <div>
@@ -232,7 +228,7 @@ const SiteSectionsPage = () => {
             </div>
           </div>
 
-          {/*  Admin Review Comments Section - فوق Location */}
+          {/* Rejected Tasks Section */}
           {rejectedTasks.length > 0 && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -243,9 +239,12 @@ const SiteSectionsPage = () => {
                       {t("admin.siteSections.rejectedTasks")}
                     </h3>
                     <p className="text-sm text-red-700 mb-3">
-                      {t("admin.siteSections.lastRejected", {
-                        count: rejectedTasks.length,
-                      })}
+                      {t(
+                        rejectedTasks.length === 1
+                          ? "admin.siteSections.lastRejected"
+                          : "admin.siteSections.lastRejectedPlural",
+                        { count: rejectedTasks.length }
+                      )}
                     </p>
                   </div>
                 </div>
@@ -267,8 +266,10 @@ const SiteSectionsPage = () => {
                           {task.sections && task.sections.length > 0 && (
                             <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                               <Layers className="w-3 h-3" />
-                              {task.sections.length} section
-                              {task.sections.length > 1 ? "s" : ""}
+                              {task.sections.length}{" "}
+                              {task.sections.length > 1
+                                ? t("admin.siteSections.sectionsPlural")
+                                : t("admin.siteSections.sectionSingular")}
                             </p>
                           )}
                         </div>
@@ -310,7 +311,7 @@ const SiteSectionsPage = () => {
                         rel="noopener noreferrer"
                         className="text-sm text-primary-600 hover:text-primary-700 underline mt-2 inline-block"
                       >
-                        📍 View on Google Maps
+                        📍 {t("common.viewOnGoogleMaps")}
                       </a>
                     )}
                   </div>

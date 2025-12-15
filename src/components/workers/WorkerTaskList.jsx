@@ -1,13 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const WorkerTaskList = ({ tasks }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   if (!tasks || tasks.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-        <p className="text-gray-500">No tasks assigned yet</p>
+        <p className="text-gray-500">
+          {t("components.taskList.noTasksAssigned")}
+        </p>
       </div>
     );
   }
@@ -19,7 +23,9 @@ const WorkerTaskList = ({ tasks }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold">Recent Tasks</h3>
+        <h3 className="text-lg font-semibold">
+          {t("components.taskList.recentTasks")}
+        </h3>
       </div>
 
       <div className="divide-y divide-gray-200">
@@ -33,8 +39,9 @@ const WorkerTaskList = ({ tasks }) => {
               <div>
                 <h4 className="font-medium text-gray-900">{task.title}</h4>
                 <p className="text-sm text-gray-600 mt-1">
-                  Site: {task.site?.name || "Not Found"} • Client:{" "}
-                  {task.client?.name || "Not Found"}
+                  {t("common.site")}: {task.site?.name || t("common.notFound")}{" "}
+                  • {t("common.client")}:{" "}
+                  {task.client?.name || t("common.notFound")}
                 </p>
               </div>
 
@@ -47,12 +54,13 @@ const WorkerTaskList = ({ tasks }) => {
                     : "bg-gray-100 text-gray-800"
                 }`}
               >
-                {task.status}
+                {t(`status.${task.status}`)}
               </span>
             </div>
 
             <div className="mt-3 text-sm text-gray-500">
-              Assigned: {format(new Date(task.createdAt), "dd MMM yyyy")}
+              {t("components.taskList.assigned")}:{" "}
+              {format(new Date(task.createdAt), "dd MMM yyyy")}
             </div>
           </div>
         ))}
@@ -63,9 +71,9 @@ const WorkerTaskList = ({ tasks }) => {
           <Link
             to={`/admin/tasks?worker=${tasks[0].assignedTo?._id}`}
             className="text-blue-600 hover:underline"
-            onClick={(e) => e.stopPropagation()} // لمنع كليك الصف يفتح ديتيلز
+            onClick={(e) => e.stopPropagation()}
           >
-            View all tasks →
+            {t("components.taskList.viewAllTasks")} →
           </Link>
         </div>
       )}
