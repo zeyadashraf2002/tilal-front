@@ -1,27 +1,30 @@
 import { CheckCircle, Clock, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const WorkerStatsGrid = ({ worker, totalTasks }) => {
+  const { t } = useTranslation();
+
   const stats = [
     {
-      label: "Total Tasks",
+      label: t("components.statsGrid.totalTasks"),
       value: totalTasks || 0,
       icon: CheckCircle,
       color: "text-blue-600",
     },
     {
-      label: "Completed",
+      label: t("components.statsGrid.completed"),
       value: worker.workerDetails?.completedTasks || 0,
       icon: CheckCircle,
       color: "text-green-600",
     },
     {
-      label: "Rating",
+      label: t("components.statsGrid.rating"),
       value: worker.workerDetails?.rating?.toFixed(1) || "0.0",
       icon: Star,
       color: "text-yellow-600",
     },
     {
-      label: "Join Date",
+      label: t("components.statsGrid.joinDate"),
       value: new Date(worker.createdAt).toLocaleDateString(),
       icon: Clock,
       color: "text-gray-600",

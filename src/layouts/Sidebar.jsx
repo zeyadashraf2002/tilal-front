@@ -96,7 +96,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                   {user?.name}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 capitalize truncate">
-                  {t(`ar_additions.roles.${user?.role}`)}
+                  {t(`roles.${user?.role}`)}
                 </p>
               </div>
             </div>

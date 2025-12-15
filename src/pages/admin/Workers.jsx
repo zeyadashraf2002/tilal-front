@@ -13,6 +13,7 @@ import { usersAPI } from "../../services/api";
 import useWorkers from "../../hooks/useWorkers";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
 const PAGE_SIZE = 10;
 
 const Workers = () => {
@@ -28,9 +29,11 @@ const Workers = () => {
     action: "",
   });
   const navigate = useNavigate();
-const handleRowClick = (worker) => {
-  navigate(`/admin/workers/${worker._id}`);
-};
+
+  const handleRowClick = (worker) => {
+    navigate(`/admin/workers/${worker._id}`);
+  };
+
   const { allWorkers, loading, error, refetch } = useWorkers();
 
   const filteredWorkers = useMemo(() => {
@@ -81,9 +84,10 @@ const handleRowClick = (worker) => {
       refetch();
       setConfirmModal({ isOpen: false, worker: null, action: "" });
     } catch (err) {
-      toast.error(t("common.errorOccurred", err), {
+      toast.error(t("common.errorOccurred"), {
         duration: 5000,
       });
+      console.log(err, t("common.errorOccurred"));
     }
   };
 
@@ -101,9 +105,10 @@ const handleRowClick = (worker) => {
       refetch();
       setConfirmModal({ isOpen: false, worker: null, action: "" });
     } catch (err) {
-      toast.error(t("common.errorOccurred", err), {
+      toast.error(t("common.errorOccurred"), {
         duration: 5000,
       });
+      console.log(err, t("common.errorOccurred"));
     }
   };
 

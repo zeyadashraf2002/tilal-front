@@ -1,5 +1,6 @@
 import { Edit, Trash2, Power, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import WorkerStatusBadge from "./WorkerStatusBadge";
 
 const WorkersTable = ({
@@ -11,25 +12,27 @@ const WorkersTable = ({
   pagination,
   onPageChange,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-200">
             <th className="text-left py-4 px-6 font-medium text-gray-700">
-              Name
+              {t("components.tables.name")}
             </th>
             <th className="text-left py-4 px-6 font-medium text-gray-700">
-              Email
+              {t("components.tables.email")}
             </th>
             <th className="text-left py-4 px-6 font-medium text-gray-700">
-              Phone
+              {t("components.tables.phone")}
             </th>
             <th className="text-center py-4 px-6 font-medium text-gray-700">
-              Status
+              {t("common.status")}
             </th>
             <th className="text-center py-4 px-6 font-medium text-gray-700">
-              Actions
+              {t("common.actions")}
             </th>
           </tr>
         </thead>
@@ -56,7 +59,7 @@ const WorkersTable = ({
                     to={`/admin/workers/${worker._id}`}
                     onClick={(e) => e.stopPropagation()}
                     className="text-blue-600 hover:text-blue-800 transition"
-                    title="View Details"
+                    title={t("common.view")}
                   >
                     <Eye className="w-5 h-5" />
                   </Link>
@@ -66,31 +69,35 @@ const WorkersTable = ({
                       onEdit(worker);
                     }}
                     className="text-indigo-600 hover:text-indigo-800 transition"
-                    title="Edit"
+                    title={t("common.edit")}
                   >
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleStatus(worker);
-                      }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleStatus(worker);
+                    }}
                     className={`transition ${
                       worker.isActive
                         ? "text-red-600 hover:text-red-800"
                         : "text-green-600 hover:text-green-800"
                     }`}
-                    title={worker.isActive ? "Deactivate" : "Activate"}
+                    title={
+                      worker.isActive
+                        ? t("common.deactivate")
+                        : t("common.activate")
+                    }
                   >
                     <Power className="w-5 h-5" />
                   </button>
                   <button
-                     onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(worker);
-                          }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(worker);
+                    }}
                     className="text-red-600 hover:text-red-900 transition"
-                    title="Delete"
+                    title={t("common.delete")}
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -105,9 +112,10 @@ const WorkersTable = ({
       {pagination.totalPages > 1 && (
         <div className="flex justify-between items-center mt-6 px-6">
           <p className="text-sm text-gray-600">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-            {pagination.total}
+            {t("common.showing")} {(pagination.page - 1) * pagination.limit + 1}{" "}
+            {t("common.to")}{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+            {t("common.of")} {pagination.total}
           </p>
           <div className="flex gap-2">
             <button
@@ -115,14 +123,14 @@ const WorkersTable = ({
               disabled={pagination.page === 1}
               className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
-              Previous
+              {t("common.previous")}
             </button>
             <button
               onClick={() => onPageChange(pagination.page + 1)}
               disabled={pagination.page === pagination.totalPages}
               className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
-              Next
+              {t("common.next")}
             </button>
           </div>
         </div>

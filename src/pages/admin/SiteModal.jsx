@@ -217,7 +217,7 @@ const SiteModal = ({ isOpen, onClose, site, clients, onSuccess }) => {
         {/* Cover Image */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("admin.sites.siteModal.coverImage")} ({{ optional: true }})
+            {t("admin.sites.siteModal.coverImageOptional")}
           </label>
 
           {/* ✅ FIXED: Only show existing cover OR new upload, not both */}
@@ -404,11 +404,10 @@ const SiteModal = ({ isOpen, onClose, site, clients, onSuccess }) => {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
             <Layers className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
             <div className="text-sm text-yellow-800">
-              <p className="font-medium">Note:</p>
-              <p>
-                After creating the site, you can add sections with reference
-                images.
+              <p className="font-medium">
+                {t("admin.sites.siteModal.notes")} :
               </p>
+              <p>{t("admin.sites.siteModal.afterCreateSiteInfo")}</p>
             </div>
           </div>
         )}
